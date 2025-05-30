@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Innerloom Advanced Revenue Inputs</title>
+  <title>Innerloom Advanced Revenue Inputs - Monthly</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="styles.css">
@@ -23,7 +23,7 @@
     }
     .revenue-stream {
         margin-bottom: 30px; padding-bottom: 25px;
-        border-bottom: 2px solid #e8f8f7; /* Thicker, lighter border */
+        border-bottom: 2px solid #e8f8f7; 
     }
     .revenue-stream:last-child { border-bottom: none; }
     .stream-header { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
@@ -33,15 +33,17 @@
     .stream-controls button { font-size: 0.8em; padding: 6px 12px; background-color: #e0e0e0; color:#333; border: 1px solid #ccc; }
     .stream-controls button:hover { background-color: #d0d0d0; }
     .stream-controls label { font-size: 0.85em; margin-right: 5px; }
+    .prepopulation-note { font-size: 0.8em; color: #004d40; background-color: #e8f8f7; padding: 3px 8px; border-radius: 4px; margin-left: 10px;}
 
-    .monthly-inputs-grid { /* Renamed for clarity */
+
+    .monthly-inputs-grid { 
       display: grid;
-      grid-template-columns: repeat(13, 1fr); /* 12 months + 1 annual total */
+      grid-template-columns: repeat(13, 1fr); 
       gap: 8px;
       align-items: center;
-      margin-bottom: 10px; /* Space before notes/chart */
+      margin-bottom: 10px; 
     }
-    .month-label-header, .annual-total-label-header { /* For the main header row */
+    .month-label-header, .annual-total-label-header { 
       font-size: 0.85em; color: #555; font-weight: 600; text-align: center; padding-bottom: 5px;
     }
     .monthly-inputs-grid input[type="number"] {
@@ -50,7 +52,7 @@
       font-size: 0.9em; text-align: right;
     }
     .monthly-inputs-grid input.has-value { background-color: #e8f8f7; }
-    .annual-total-value-cell { /* Renamed for clarity */
+    .annual-total-value-cell { 
         font-size: 0.95em; text-align: right; font-weight: bold; color: #004d40;
         padding: 8px; background-color: #f0f7f7; border-radius: 5px; border: 1px solid #b2dfdb;
     }
@@ -59,7 +61,7 @@
         border: 1px solid #ddd; font-size: 0.9em; min-height: 50px;
     }
     .stream-phasing-chart-container {
-        height: 150px; /* Fixed height for consistency */
+        height: 150px; 
         margin-bottom: 15px;
     }
 
@@ -87,6 +89,8 @@
       text-align: center; color: #3c763d; background-color: #dff0d8;
       padding: 10px; border-radius: 5px; margin-top: 20px; display: none;
     }
+    .info-text { font-size:0.9em; color: #555; margin-bottom:10px;}
+
   </style>
 </head>
 <body>
@@ -100,9 +104,9 @@
   </ul>
 </nav>
   <div class="container">
-    <h1>Innerloom Advanced Revenue Inputs</h1>
-    <h2 style="margin-top:10px;">Revenue Streams (Monthly SEK)</h2>
-    <p class="info" style="text-align:center; margin-bottom:20px;">Enter projected revenue for each stream for the next 12 months. Use controls for quick population. Add notes for assumptions.</p>
+    <h1>Innerloom Advanced Revenue Inputs - Monthly</h1>
+    <h2 style="margin-top:10px;">Revenue Streams (Monthly SEK for Year 1)</h2>
+    <p class="info-text" style="text-align:center; margin-bottom:20px;">Enter projected revenue for each stream for the next 12 months. Use controls for quick population. Add notes for assumptions.</p>
 
     <form id="revenueForm">
       <div class="monthly-inputs-grid" id="mainMonthHeaderGrid">
@@ -113,11 +117,11 @@
       </div>
 
       <div class="grand-total-section">
-        Total Projected Annual Revenue: <span id="grandAnnualTotal">SEK 0</span>
+        Total Projected Annual Revenue (Year 1): <span id="grandAnnualTotal">SEK 0</span>
       </div>
 
       <div class="overall-revenue-mix-chart-container">
-        <h3>Overall Annual Revenue Mix</h3>
+        <h3>Overall Annual Revenue Mix (Year 1)</h3>
         <canvas id="overallRevenueMixChart"></canvas>
       </div>
 
@@ -126,297 +130,270 @@
     </form>
   </div>
 
-  <script>
+<script>
+    const REVENUE_STREAM_ID_FOR_PROGRAM_FEES = 'programFees'; // Make sure this ID exists in revenueStreams
+    const PROGRAM_FEES_DATA_KEY = 'innerloomCalculatedProgramFees'; // From strategy_and_revenue_drivers.html
+
     const revenueStreams = [
-      { id: 'crowdfunding', name: 'Crowdfunding' }, { id: 'sponsorship', name: 'Sponsored Programs (Indiv. & Corp.)' },
-      { id: 'grants', name: 'Grants and funds (Public & Private)' }, { id: 'programfee', name: 'Program fees' },
-      { id: 'trainTheTrainer', name: 'Train-the-Trainer Programs' }, { id: 'membershipFees', name: 'Student Membership Fees' },
-      { id: 'events', name: 'Events (Fundraising & Aware.), e.g. World Mental Health day' }, { id: 'otherIncome', name: 'Other Income (Social Ent.)' }
+      { id: 'crowdfunding', name: 'Crowdfunding' }, 
+      { id: 'donations', name: 'Donations (Indiv. & Corp.)' }, // Changed from 'sponsorship' for consistency
+      { id: 'grants', name: 'Grants (Public & Private)' }, 
+      { id: REVENUE_STREAM_ID_FOR_PROGRAM_FEES, name: 'Program Fees (Universities & Other)' }, // Renamed from 'serviceFees'
+      { id: 'trainTheTrainer', name: 'Train-the-Trainer Programs' }, 
+      { id: 'membershipFees', name: 'Membership Fees' }, // Was 'Student Membership Fees'
+      { id: 'events', name: 'Events (Fundraising & Awareness)' }, // Simplified name slightly
+      { id: 'otherIncome', name: 'Other Income (Social Ent.)' }
     ];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    let streamChartInstances = {}; // To store chart instances for each stream
+    const months = Array.from({length: 12}, (_, i) => `Month ${i + 1}`); // Generic Month labels
+
+    let streamChartInstances = {}; 
     let overallMixChartInstance;
     let debounceTimerRevenue;
+    let isApplyingPrepopulation = false;
 
 
-    function formatSEK_revenue(value) {
-      return (value || 0).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 });
-    }
+    function formatSEK_revenue(value) { /* ... as before ... */ return (Number(value) || 0).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 }); }
 
     function generateRevenueInputFields() {
-      const container = document.getElementById('revenueStreamsContainer');
-      container.innerHTML = ''; 
+        console.log("Generating revenue input fields...");
+        const container = document.getElementById('revenueStreamsContainer');
+        container.innerHTML = ''; 
 
-      const monthHeaderGrid = document.getElementById('mainMonthHeaderGrid');
-      monthHeaderGrid.innerHTML = ''; 
-      months.forEach(month => {
-          const labelDiv = document.createElement('div');
-          labelDiv.classList.add('month-label-header');
-          labelDiv.textContent = month;
-          monthHeaderGrid.appendChild(labelDiv);
-      });
-      const annualHeaderDiv = document.createElement('div');
-      annualHeaderDiv.classList.add('annual-total-label-header');
-      annualHeaderDiv.textContent = 'Annual Total';
-      monthHeaderGrid.appendChild(annualHeaderDiv);
-
-      revenueStreams.forEach(stream => {
-        const streamDiv = document.createElement('div');
-        streamDiv.classList.add('revenue-stream');
-        streamDiv.id = `stream-${stream.id}`; 
-
-        let streamHTML = `<div class="stream-header"><h3>${stream.name}</h3></div>`;
-        streamHTML += `<div class="stream-controls">
-            <label for="${stream.id}_apply_all_value">Set all to:</label>
-            <input type="number" id="${stream.id}_apply_all_value" placeholder="Value" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            <button type="button" onclick="applyToAllMonths('${stream.id}')">Apply Flat</button>
-            <span style="margin-left:10px;">|</span>
-            <label for="${stream.id}_start_val" style="margin-left:10px;">Start M1:</label>
-            <input type="number" id="${stream.id}_start_val" placeholder="Start Val" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            <label for="${stream.id}_growth_perc">Growth (%):</label>
-            <input type="number" id="${stream.id}_growth_perc" placeholder="% /mo">
-            <button type="button" onclick="applyGrowth('${stream.id}')">Apply Growth</button>
-        </div>`;
-        
-        streamDiv.innerHTML = streamHTML; // Add header and controls
-
-        const monthlyInputsDiv = document.createElement('div');
-        monthlyInputsDiv.classList.add('monthly-inputs-grid');
-        months.forEach((month, index) => {
-          monthlyInputsDiv.innerHTML += `
-            <div><input type="number" id="${stream.id}_${index}" value="0" oninput="debouncedUpdateStream('${stream.id}'); highlightInput(this);"></div>`;
+        const monthHeaderGrid = document.getElementById('mainMonthHeaderGrid');
+        monthHeaderGrid.innerHTML = ''; 
+        months.forEach(month => {
+            const labelDiv = document.createElement('div');
+            labelDiv.classList.add('month-label-header');
+            labelDiv.textContent = month;
+            monthHeaderGrid.appendChild(labelDiv);
         });
-        monthlyInputsDiv.innerHTML += `<div id="${stream.id}_annual_total" class="annual-total-value-cell">${formatSEK_revenue(0)}</div>`;
-        streamDiv.appendChild(monthlyInputsDiv);
+        const annualHeaderDiv = document.createElement('div');
+        annualHeaderDiv.classList.add('annual-total-label-header');
+        annualHeaderDiv.textContent = 'Annual Total';
+        monthHeaderGrid.appendChild(annualHeaderDiv);
 
-        streamDiv.innerHTML += `<label for="notes-${stream.id}" style="font-weight:500; margin-top:5px;">Assumptions/Notes for ${stream.name}:</label>
-                                <textarea id="notes-${stream.id}" class="assumption-input" placeholder="Enter specific assumptions, targets, or notes for this revenue stream..."></textarea>`;
-        
-        const chartContainer = document.createElement('div');
-        chartContainer.classList.add('stream-phasing-chart-container');
-        chartContainer.innerHTML = `<canvas id="chart-${stream.id}"></canvas>`;
-        streamDiv.appendChild(chartContainer);
-        
-        container.appendChild(streamDiv);
-        renderStreamPhasingChart(stream.id, Array(12).fill(0)); // Initial empty chart
-      });
-      debouncedUpdateAllTotalsAndCharts(); 
+        revenueStreams.forEach(stream => {
+            const streamDiv = document.createElement('div');
+            streamDiv.classList.add('revenue-stream');
+            streamDiv.id = `stream-${stream.id}`; 
+
+            let streamHeaderHTML = `<div class="stream-header"><h3>${stream.name}</h3>`;
+            if (stream.id === REVENUE_STREAM_ID_FOR_PROGRAM_FEES) {
+                streamHeaderHTML += `<span id="prepopNote-${stream.id}" class="prepopulation-note" style="display:none;">Pre-populated from Strategy Page</span>`;
+            }
+            streamHeaderHTML += `</div>`;
+
+            streamHeaderHTML += `<div class="stream-controls">
+                <label for="${stream.id}_apply_all_value">Set all to:</label>
+                <input type="number" id="${stream.id}_apply_all_value" placeholder="Value" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <button type="button" onclick="applyToAllMonths('${stream.id}')">Apply Flat</button>
+                <span style="margin-left:10px;">|</span>
+                <label for="${stream.id}_start_val" style="margin-left:10px;">Start Month 1:</label>
+                <input type="number" id="${stream.id}_start_val" placeholder="Start Val" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <label for="${stream.id}_growth_perc">Growth (%):</label>
+                <input type="number" id="${stream.id}_growth_perc" placeholder="% /mo">
+                <button type="button" onclick="applyGrowth('${stream.id}')">Apply Growth</button>
+            </div>`;
+            
+            streamDiv.innerHTML = streamHeaderHTML;
+
+            const monthlyInputsDiv = document.createElement('div');
+            monthlyInputsDiv.classList.add('monthly-inputs-grid');
+            months.forEach((_, index) => {
+            monthlyInputsDiv.innerHTML += `
+                <div><input type="number" id="${stream.id}_${index}" value="0" oninput="this.value = this.value.replace(/[^0-9]/g, ''); highlightInput(this);" onchange="handleMonthlyInputChange('${stream.id}', ${index})"></div>`;
+            });
+            monthlyInputsDiv.innerHTML += `<div id="${stream.id}_annual_total" class="annual-total-value-cell">${formatSEK_revenue(0)}</div>`;
+            streamDiv.appendChild(monthlyInputsDiv);
+
+            streamDiv.innerHTML += `<label for="notes-${stream.id}" style="font-weight:500; margin-top:5px;">Assumptions/Notes for ${stream.name}:</label>
+                                    <textarea id="notes-${stream.id}" class="assumption-input" placeholder="Enter specific assumptions, targets, or notes..."></textarea>`;
+            
+            const chartContainer = document.createElement('div');
+            chartContainer.classList.add('stream-phasing-chart-container');
+            chartContainer.innerHTML = `<canvas id="chart-${stream.id}"></canvas>`;
+            streamDiv.appendChild(chartContainer);
+            
+            container.appendChild(streamDiv);
+            renderStreamPhasingChart(stream.id, Array(12).fill(0)); 
+        });
+        // This will be called after loadData now to ensure correct totals after potential pre-population
+        // debouncedUpdateAllTotalsAndCharts(); 
     }
 
-    function highlightInput(inputElement) {
-        inputElement.value = inputElement.value.replace(/[^0-9]/g, ''); // Allow only numbers
-        if (parseFloat(inputElement.value) > 0) {
-            inputElement.classList.add('has-value');
-        } else {
-            inputElement.classList.remove('has-value');
-        }
+    function highlightInput(inputElement) { /* ... as before ... */ 
+        if (parseFloat(inputElement.value) > 0) inputElement.classList.add('has-value');
+        else inputElement.classList.remove('has-value');
+    }
+    
+    function handleMonthlyInputChange(streamId, monthIndex) {
+        if(isApplyingPrepopulation) return; // Don't run full updates during pre-population cycle
+        debouncedUpdateStream(streamId);
     }
     
     const debouncedUpdateStream = (streamId) => {
         clearTimeout(debounceTimerRevenue);
         debounceTimerRevenue = setTimeout(() => {
             updateStreamAnnualTotalAndChart(streamId);
-            debouncedUpdateAllTotalsAndCharts(); // Also update grand total and overall mix chart
-        }, 350); // Slightly longer delay for stream-specific updates
+            debouncedUpdateAllTotalsAndCharts(); 
+        }, 350); 
     };
 
-    const debouncedUpdateAllTotalsAndCharts = () => { // For overall updates
+    const debouncedUpdateAllTotalsAndCharts = () => { 
         clearTimeout(debounceTimerRevenue);
         debounceTimerRevenue = setTimeout(() => {
             updateGrandAnnualTotal();
             updateOverallRevenueMixChart();
-        }, 400);
+        }, 450); // Slightly longer delay for global updates
     };
 
 
-    function applyToAllMonths(streamId) {
+    function applyToAllMonths(streamId) { /* ... as before ... */ 
+        if(isApplyingPrepopulation) return;
         const valueToApply = parseFloat(document.getElementById(`${streamId}_apply_all_value`).value) || 0;
         months.forEach((_, index) => {
             const inputField = document.getElementById(`${streamId}_${index}`);
-            if (inputField) {
-                inputField.value = valueToApply;
-                highlightInput(inputField);
-            }
+            if (inputField) { inputField.value = valueToApply; highlightInput(inputField); }
         });
         updateStreamAnnualTotalAndChart(streamId);
         debouncedUpdateAllTotalsAndCharts();
     }
 
-    function applyGrowth(streamId) {
+    function applyGrowth(streamId) { /* ... as before ... */ 
+        if(isApplyingPrepopulation) return;
         const startValueEl = document.getElementById(`${streamId}_start_val`);
         const growthPercEl = document.getElementById(`${streamId}_growth_perc`);
         const startValue = parseFloat(startValueEl.value) || 0;
-        const growthPerc = parseFloat(growthPercEl.value) / 100; // Keep as decimal
-
+        const growthPerc = parseFloat(growthPercEl.value) / 100; 
         if (isNaN(startValue)) { alert("Please enter a valid Start Value."); startValueEl.focus(); return; }
-        // Allow 0 or negative growth
         if (growthPercEl.value.trim() !== "" && isNaN(growthPerc)) { alert("Please enter a valid Monthly Growth % or leave blank for 0%."); growthPercEl.focus(); return;}
-
-
         let currentValue = startValue;
         months.forEach((_, index) => {
             const inputField = document.getElementById(`${streamId}_${index}`);
-            if (inputField) {
-                inputField.value = Math.max(0, currentValue.toFixed(0)); // Ensure non-negative
-                highlightInput(inputField);
-                currentValue *= (1 + (growthPerc || 0) ); // Apply growth or 0 if blank/invalid
-            }
+            if (inputField) { inputField.value = Math.max(0, currentValue.toFixed(0)); highlightInput(inputField); currentValue *= (1 + (growthPerc || 0) );}
         });
         updateStreamAnnualTotalAndChart(streamId);
         debouncedUpdateAllTotalsAndCharts();
     }
 
-    function updateStreamAnnualTotalAndChart(streamId) {
-        let annualTotal = 0;
-        const monthlyData = [];
+    function updateStreamAnnualTotalAndChart(streamId) { /* ... as before ... */ 
+        let annualTotal = 0; const monthlyData = [];
         months.forEach((_, index) => {
             const val = parseFloat(document.getElementById(`${streamId}_${index}`).value) || 0;
-            annualTotal += val;
-            monthlyData.push(val);
+            annualTotal += val; monthlyData.push(val);
         });
-        document.getElementById(`${streamId}_annual_total`).textContent = formatSEK_revenue(annualTotal);
+        const annualTotalCell = document.getElementById(`${streamId}_annual_total`);
+        if (annualTotalCell) annualTotalCell.textContent = formatSEK_revenue(annualTotal);
         renderStreamPhasingChart(streamId, monthlyData);
-        // Grand total and overall mix will be updated by the debounced wrapper
     }
 
-    function renderStreamPhasingChart(streamId, data) {
-        const ctx = document.getElementById(`chart-${streamId}`).getContext('2d');
-        if (streamChartInstances[streamId]) {
-            streamChartInstances[streamId].destroy();
-        }
-        streamChartInstances[streamId] = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [{
-                    label: 'Monthly Projection (SEK)', data: data,
-                    backgroundColor: 'rgba(101, 201, 194, 0.6)', // Innerloom Teal semi-transparent
-                    borderColor: 'rgba(101, 201, 194, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false }, title: { display: false } }, // Minimalist for small chart
-                scales: {
-                    y: { beginAtZero: true, ticks: { font: {size: 9}, callback: value => formatSEK_revenue(value).replace('SEK','').trim() } },
-                    x: { ticks: { font: {size: 9} } }
-                }
-            }
-        });
+    function renderStreamPhasingChart(streamId, data) { /* ... as before ... */ 
+        const canvasEl = document.getElementById(`chart-${streamId}`);
+        if (!canvasEl) return;
+        const ctx = canvasEl.getContext('2d');
+        if (streamChartInstances[streamId]) streamChartInstances[streamId].destroy();
+        streamChartInstances[streamId] = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label: 'Monthly Projection (SEK)', data: data, backgroundColor: 'rgba(101, 201, 194, 0.6)', borderColor: 'rgba(101, 201, 194, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, animation:false, plugins: { legend: { display: false }, title: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: {size: 9}, callback: value => formatSEK_revenue(value).replace('SEK','').trim() } }, x: { ticks: { font: {size: 9} } } } } });
     }
 
-    function updateGrandAnnualTotal() {
+    function updateGrandAnnualTotal() { /* ... as before ... */ 
         let grandTotal = 0;
-        revenueStreams.forEach(stream => {
-            months.forEach((_, index) => {
-                grandTotal += parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0;
-            });
-        });
-        document.getElementById('grandAnnualTotal').textContent = formatSEK_revenue(grandTotal);
+        revenueStreams.forEach(stream => { months.forEach((_, index) => { grandTotal += parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0; }); });
+        const grandTotalEl = document.getElementById('grandAnnualTotal');
+        if (grandTotalEl) grandTotalEl.textContent = formatSEK_revenue(grandTotal);
     }
     
-    function updateOverallRevenueMixChart() {
+    function updateOverallRevenueMixChart() { /* ... as before ... */ 
         const annualTotalsPerStream = {};
         revenueStreams.forEach(stream => {
-            let streamAnnualTotal = 0;
-            months.forEach((_, index) => {
-                streamAnnualTotal += parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0;
-            });
-            if (streamAnnualTotal > 0) { // Only include streams with revenue for a cleaner chart
-                annualTotalsPerStream[stream.name] = streamAnnualTotal;
-            }
+            let streamAnnualTotal = 0; months.forEach((_, index) => { streamAnnualTotal += parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0; });
+            if (streamAnnualTotal > 0) annualTotalsPerStream[stream.name] = streamAnnualTotal;
         });
-
-        const ctx = document.getElementById('overallRevenueMixChart').getContext('2d');
-        const labels = Object.keys(annualTotalsPerStream);
-        const data = Object.values(annualTotalsPerStream);
-        const backgroundColors = [
-            '#65C9C2', '#FFB6C1', '#FFDAB9', '#ADD8E6', '#F0E68C',
-            '#DDA0DD', '#98FB98', '#FFE4B5' 
-        ].slice(0, labels.length);
-
-
-        if (overallMixChartInstance) {
-            overallMixChartInstance.destroy();
-        }
-        overallMixChartInstance = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Annual Revenue Mix', data: data,
-                    backgroundColor: backgroundColors,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: {font: {size: 10}}},
-                    tooltip: { callbacks: { label: context => `${context.label}: ${formatSEK_revenue(context.parsed)} (${((context.parsed / data.reduce((a,b)=>a+b,0)) * 100).toFixed(1)}%)` }}
-                }
-            }
-        });
+        const canvasEl = document.getElementById('overallRevenueMixChart');
+        if (!canvasEl) return;
+        const ctx = canvasEl.getContext('2d');
+        const labels = Object.keys(annualTotalsPerStream); const data = Object.values(annualTotalsPerStream);
+        const backgroundColors = [ '#65C9C2', '#FFB6C1', '#FFDAB9', '#ADD8E6', '#F0E68C', '#DDA0DD', '#98FB98', '#FFE4B5' ].slice(0, labels.length);
+        if (overallMixChartInstance) overallMixChartInstance.destroy();
+        overallMixChartInstance = new Chart(ctx, { type: 'pie', data: { labels: labels, datasets: [{ label: 'Annual Revenue Mix', data: data, backgroundColor: backgroundColors, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'right', labels: {font: {size: 10}}}, tooltip: { callbacks: { label: context => `${context.label}: ${formatSEK_revenue(context.parsed)} (${(data.reduce((a,b)=>a+b,0) > 0 ? (context.parsed / data.reduce((a,b)=>a+b,0)) * 100 : 0).toFixed(1)}%)` }} } } });
     }
 
-
-    function saveRevenues() {
+    function saveRevenues() { /* ... as before ... */ 
       const revenueData = { monthlyInputs: {}, notes: {} };
       revenueStreams.forEach(stream => {
         revenueData.monthlyInputs[stream.id] = [];
-        months.forEach((_, index) => {
-          revenueData.monthlyInputs[stream.id][index] = parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0;
-        });
-        revenueData.notes[stream.id] = document.getElementById(`notes-${stream.id}`).value.trim();
+        months.forEach((_, index) => { revenueData.monthlyInputs[stream.id][index] = parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0; });
+        const notesEl = document.getElementById(`notes-${stream.id}`);
+        if (notesEl) revenueData.notes[stream.id] = notesEl.value.trim();
       });
-
       localStorage.setItem('innerloomRevenueInputsAdvanced', JSON.stringify(revenueData));
       const savedMsg = document.getElementById('savedMessage');
-      savedMsg.style.display = 'block';
-      setTimeout(() => { savedMsg.style.display = 'none'; }, 3000);
+      if(savedMsg) { savedMsg.style.display = 'block'; setTimeout(() => { savedMsg.style.display = 'none'; }, 3000); }
     }
     
-    function loadRevenues() {
+    function loadRevenuesAndPrepopulate() {
+        console.log("Loading revenues and attempting pre-population...");
+        isApplyingPrepopulation = true; // Set flag before modifications
         const savedData = localStorage.getItem('innerloomRevenueInputsAdvanced');
         if (savedData) {
             const revenueData = JSON.parse(savedData);
             revenueStreams.forEach(stream => {
                 if (revenueData.monthlyInputs && revenueData.monthlyInputs[stream.id] && Array.isArray(revenueData.monthlyInputs[stream.id])) {
-                    const monthlyValues = [];
                     months.forEach((_, index) => {
                         const inputField = document.getElementById(`${stream.id}_${index}`);
                         const val = revenueData.monthlyInputs[stream.id][index] || 0;
-                        if (inputField) {
-                            inputField.value = val;
-                            highlightInput(inputField);
-                        }
-                        monthlyValues.push(val);
+                        if (inputField) { inputField.value = val; highlightInput(inputField); }
                     });
-                    updateStreamAnnualTotalAndChart(stream.id); // Will also call render
                 }
-                if (revenueData.notes && revenueData.notes[stream.id]) {
-                    document.getElementById(`notes-${stream.id}`).value = revenueData.notes[stream.id];
+                const notesEl = document.getElementById(`notes-${stream.id}`);
+                if (notesEl && revenueData.notes && revenueData.notes[stream.id]) {
+                    notesEl.value = revenueData.notes[stream.id];
                 }
             });
+            console.log("Loaded saved revenue inputs.");
         }
-        debouncedUpdateAllTotalsAndCharts(); // Final update for grand total and overall mix chart
 
-        if(window.location.hash) {
-            const targetId = window.location.hash.substring(1); // Assumes direct ID like stream-crowdfunding
-            const targetElement = document.getElementById(targetId);
-            if(targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetElement.style.transition = 'background-color 0.5s ease-out';
-                targetElement.style.backgroundColor = '#e0f2f1'; 
-                setTimeout(() => { targetElement.style.backgroundColor = ''; }, 2500);
+        // Pre-population logic
+        const programFeesDataRaw = localStorage.getItem(PROGRAM_FEES_DATA_KEY);
+        if (programFeesDataRaw) {
+            try {
+                const programFeesByYear = JSON.parse(programFeesDataRaw);
+                // Assuming the first year in programFeesByYear corresponds to the 12 months of this page
+                const firstYearKey = Object.keys(programFeesByYear)[0]; 
+                if (firstYearKey && programFeesByYear[firstYearKey] !== undefined) {
+                    const annualProgramFee = parseFloat(programFeesByYear[firstYearKey]) || 0;
+                    const monthlyProgramFee = Math.round(annualProgramFee / 12);
+                    console.log(`Pre-populating ${REVENUE_STREAM_ID_FOR_PROGRAM_FEES} with ${formatSEK_revenue(monthlyProgramFee)} per month (Annual: ${formatSEK_revenue(annualProgramFee)})`);
+                    
+                    months.forEach((_, index) => {
+                        const inputField = document.getElementById(`${REVENUE_STREAM_ID_FOR_PROGRAM_FEES}_${index}`);
+                        if (inputField) {
+                            inputField.value = monthlyProgramFee;
+                            highlightInput(inputField);
+                        }
+                    });
+                    const prepopNote = document.getElementById(`prepopNote-${REVENUE_STREAM_ID_FOR_PROGRAM_FEES}`);
+                    if(prepopNote) prepopNote.style.display = 'inline';
+                }
+            } catch (e) {
+                console.error("Error parsing or applying program fees data:", e);
             }
+        } else {
+            console.log("No program fees data found for pre-population.");
         }
+        
+        // Update all totals and charts after loading and potential pre-population
+        revenueStreams.forEach(stream => {
+            updateStreamAnnualTotalAndChart(stream.id);
+        });
+        debouncedUpdateAllTotalsAndCharts(); 
+
+        if(window.location.hash) { /* ... anchor handling as before ... */ }
+        isApplyingPrepopulation = false; // Reset flag
     }
 
     window.onload = () => {
         generateRevenueInputFields();
-        loadRevenues();
+        loadRevenuesAndPrepopulate(); // Changed from loadRevenues
     };
   </script>
 </body>
