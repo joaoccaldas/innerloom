@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innerloom Advanced Funding Strategy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', 'Segoe UI', sans-serif; padding: 20px 40px;
+      background: #f9f9f9; color: #333333; line-height: 1.7; font-weight: 300;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { text-align: center; color: #262626; font-weight: 700; margin-bottom: 15px; }
+    h2.subtitle { text-align: center; color: #65C9C2; font-weight: 600; margin-top: 0; margin-bottom: 30px; }
+    .stream {
+      background: #ffffff; padding: 20px; margin-bottom: 25px;
+      border-left: 5px solid #65C9C2; border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .stream-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .stream h3 { margin-top: 0; margin-bottom:0; color: #2c3e50; font-weight: 600; flex-grow: 1; }
+    .stream-details { display: none; margin-top: 15px; padding-top:15px; border-top: 1px dashed #e0e0e0;}
+    .stream-details.expanded { display: block; }
+    .toggler-icon { font-size: 1.2em; margin-left:10px; transition: transform 0.2s; }
+    .expanded .toggler-icon { transform: rotate(90deg); }
+
+    ul { margin: 10px 0; padding-left: 20px; list-style-type: disc; }
+    li { margin-bottom: 8px; }
+    .priority-tag {
+      font-weight: 600; padding: 4px 10px; border-radius: 15px;
+      font-size: 0.8em; white-space: nowrap; margin-left: 10px;
+    }
+    .short { background: #e0f2f1; color: #00796b; }
+    .medium { background: #fff3e0; color: #ef6c00; }
+    .long { background: #e3f2fd; color: #1565c0; }
+    
+    .context, .effort-potential-section {
+      margin-bottom: 30px; padding: 25px; background: #e8f8f7;
+      border-left: 5px solid #5ABBAD; border-radius: 8px; color: #333;
+    }
+    .context p, .effort-potential-section p { margin-bottom: 10px; }
+    .context strong, .effort-potential-section strong { color: #004d40; font-weight: 600; }
+    .source { font-size: 0.8em; color: #777; display: block; margin-top: 5px; }
+
+    .stream-actions { display:flex; align-items:center; gap:10px; }
+    .action-buttons button, .action-buttons a {
+      font-size: 0.8em; padding: 6px 12px; border-radius: 4px; cursor: pointer;
+      text-decoration: none; color: white; display: inline-block; border: none;
+      font-family: 'Poppins', sans-serif;
+    }
+    .btn-add-projection { background-color: #65C9C2; } .btn-add-projection:hover { background-color: #5ABBAD; }
+
+    .priority-selector button {
+        font-size: 0.75em; padding: 4px 8px;
+        border: 1px solid #ccc; background-color: #f0f0f0; color: #555;
+        border-radius: 12px; cursor: pointer;
+    }
+    .priority-selector button.selected-focus { background-color: #28a745; color: white; border-color: #28a745;}
+    .priority-selector button.selected-consider { background-color: #ffc107; color: black; border-color: #ffc107;}
+    .priority-selector button.selected-later { background-color: #6c757d; color: white; border-color: #6c757d;}
+
+    .assumption-input textarea {
+        width: calc(100% - 12px); margin-top: 10px; padding: 8px; border-radius: 4px;
+        border: 1px solid #ddd; font-size: 0.85em; min-height: 50px;
+        font-family: 'Poppins', sans-serif;
+    }
+    .long-term-note { font-size: 0.8em; color: #1565c0; font-style: italic; margin-top: 5px; }
+
+    .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 0.9em;}
+    .summary-table th, .summary-table td { border: 1px solid #ddd; padding: 10px; text-align: left;}
+    .summary-table th { background-color: #e8f8f7; color: #004d40; font-weight: 600;}
+    .summary-table .notes-cell { font-style: italic; color: #555; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .center-text { text-align: center !important; }
+  </style>
+</head>
+<body>
+<nav class="main-menu">
+  <ul>
+    <li><a href="landing.html">Inner Loom roadmap</a></li>
+    <li><a href="funding_strategy.html">Funding Ecosystem</a></li>
+    <li><a href="revenue_input.html">Revenue modeling</a></li>
+    <li><a href="costs_input.html">Costs modeling</a></li>
+    <li><a href="financial_dashboard.html">Inner Loom Financials</a></li>
+  </ul>
+</nav>
+<div class="container">
+  <h1>Innerloom Advanced Funding Strategy</h1>
+  <h2 class="subtitle">Dynamic Planning for Youth Mental Health Resources</h2>
+
+  <div class="context">
+    <p><strong>Innerloom's mission</strong> requires a robust and diversified funding base. This interactive strategy planner helps assess options, set priorities, and capture key assumptions. Remember to save your inputs periodically by interacting with priority buttons or notes fields.</p>
+  </div>
+
+  <h2>Funding Streams Quick Comparison & Priority</h2>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Funding Stream</th>
+        <th class="center-text">Timeframe</th>
+        <th class="center-text">Potential Size</th>
+        <th class="center-text">Effort</th>
+        <th class="center-text">Focus Priority</th>
+        <th>Key Notes/Assumptions</th>
+      </tr>
+    </thead>
+    <tbody id="summaryTableBody"></tbody>
+  </table>
+
+  <div class="effort-potential-section">
+      <h3>Strategic Mapping: Effort vs. Potential</h3>
+      <p>Consider plotting your funding streams on a simple 2x2 matrix:</p>
+      <ul>
+          <li><strong>High Potential / Low Effort:</strong> "Quick Wins" - Prioritize these!</li>
+          <li><strong>High Potential / High Effort:</strong> "Major Initiatives" - Strategic, require planning.</li>
+          <li><strong>Low Potential / Low Effort:</strong> "Fillers" - Good for diversification.</li>
+          <li><strong>Low Potential / High Effort:</strong> "Re-evaluate" - Are these worth the time?</li>
+      </ul>
+      <p>Use the 'Focus Priority' buttons and 'Notes' below to capture your thoughts for each stream.</p>
+  </div>
+
+  <div class="stream" data-stream-id="crowdfunding" data-stream-name="Crowdfunding" data-timeframe="Short" data-size="Small-Medium" data-effort="Medium-High">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Crowdfunding <span class="priority-tag short">Short-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('crowdfunding', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('crowdfunding', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('crowdfunding', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-crowdfunding" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Raising small amounts of money from a large number of people, typically via online platforms.</li>
+        <li><strong>Pros:</strong> Rapid mobilization, community engagement, market validation, branding & visibility.</li>
+        <li><strong>Cons:</strong> Unpredictable returns, resource-intensive (promotion, communication), platform fees.</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Ideal for launching pilot projects (e.g., "Mental Wellness Kits for Students," new workshop series), funding specific equipment, or time-sensitive campaigns. Energizes supporters.</li>
+        <li><strong>Swedish Context:</strong> Donation-based crowdfunding common; reward-based also viable (e.g., early access). <span class="source">"Crowdfunding i Sverige" reports.</span></li>
+      </ul>
+      <textarea id="notes-crowdfunding" class="assumption-input" placeholder="Key assumptions, target audience, campaign ideas for Crowdfunding..." onblur="saveNotes('crowdfunding')"></textarea>
+      <div id="longTermNote-crowdfunding" class="long-term-note" style="display:none;">Consider including in <a href="long_term_planning.html">Long-Term Plan</a> if recurring or part of a larger strategy.</div>
+    </div>
+  </div>
+  
+  <div class="stream" data-stream-id="sponsorship" data-stream-name="Sponsored programs (Individual & Corporate)" data-timeframe="Medium" data-size="Medium-Large" data-effort="Medium">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Sponsored programs (Ind. & Corporate) <span class="priority-tag medium">Medium-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('donations', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('donations', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('donations', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-donations" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Soliciting direct financial contributions from individuals (one-off/recurring) and businesses (CSR, sponsorships).</li>
+        <li><strong>Pros:</strong> Often flexible/unrestricted funding, builds loyal supporter base (recurring), corporate partnerships offer non-financial benefits, tax-deductible in Sweden.</li>
+        <li><strong>Cons:</strong> Requires consistent donor stewardship and fundraising campaigns, sensitive to economic conditions, competitive.</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Core to sustaining ongoing programs, community support, operations. Corporate partnerships for specific program sponsorships.</li>
+        <li><strong>Swedish Context:</strong> "90-konto" certification for trust. Swish for easy mobile donations. <span class="source">Skatteverket, Svensk Insamlingskontroll.</span></li>
+      </ul>
+      <textarea id="notes-donations" class="assumption-input" placeholder="Donor acquisition strategy, corporate outreach plan, recurring giving program details..." onblur="saveNotes('donations')"></textarea>
+      <div id="longTermNote-donations" class="long-term-note" style="display:none;">A core component for <a href="long_term_planning.html">Long-Term Sustainability Plan</a>.</div>
+    </div>
+  </div>
+
+  <div class="stream" data-stream-id="grants" data-stream-name="Grants (Public & Private Foundations)" data-timeframe="Short-Medium" data-size="Large" data-effort="High">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Grants (Public & Private Foundations) <span class="priority-tag short">Short-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('grants', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('grants', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('grants', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-grants" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Applying for funding from governmental bodies, public agencies, private foundations, EU programs.</li>
+        <li><strong>Pros:</strong> Significant funding potential, enhances credibility/validation, enables project-focused growth, networking opportunities.</li>
+        <li><strong>Cons:</strong> Highly competitive, lengthy/demanding applications, restrictive terms & reporting, administrative burden, often project-based (not operational).</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Crucial for innovation, piloting new interventions, research, scaling successful programs. Target grants for youth mental health, prevention, digital solutions.</li>
+        <li><strong>Key Swedish Sources:</strong> Allmänna Arvsfonden, Folkhälsomyndigheten, MUCF, Vinnova, Länsstyrelsen, Kommuner, Wallenberg Foundations, Hugo Stenbecks Stiftelse, etc. EU: Erasmus+, ESF+. <span class="source">Stiftelseansökan.se</span></li>
+      </ul>
+      <textarea id="notes-grants" class="assumption-input" placeholder="Specific grant targets, application timelines, required resources for grant writing, potential project alignment..." onblur="saveNotes('grants')"></textarea>
+      <div id="longTermNote-grants" class="long-term-note" style="display:none;">Consistent grant applications are key for the <a href="long_term_planning.html">Long-Term Plan</a>.</div>
+    </div>
+  </div>
+  
+  <div class="stream" data-stream-id="programfee" data-stream-name="Program Fees" data-timeframe="Medium" data-size="Medium-Large" data-effort="Medium">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Program Fees (B2B/B2G/B2C) <span class="priority-tag medium">Medium-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('serviceFees', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('serviceFees', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('serviceFees', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-serviceFees" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Charging fees for specialized services (workshops for schools/universities, training for professionals, mental health coaching, curated resources).</li>
+        <li><strong>Pros:</strong> Sustainable, recurring revenue linked to expertise, demonstrates tangible value, diversification, fosters deeper partnerships.</li>
+        <li><strong>Cons:</strong> Requires skilled personnel for delivery, careful pricing strategy (market research, accessibility), marketing/sales effort, maintain mission alignment (avoid excluding vulnerable youth).</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Develop service portfolio for schools, municipalities, companies. Can become a significant, sustainable revenue pillar.</li>
+      </ul>
+      <textarea id="notes-serviceFees" class="assumption-input" placeholder="Target client segments, service packages, pricing models, required capacity building..." onblur="saveNotes('serviceFees')"></textarea>
+      <div id="longTermNote-serviceFees" class="long-term-note" style="display:none;">Scaling services is vital for the <a href="long_term_planning.html">Long-Term Plan</a>.</div>
+    </div>
+  </div>
+
+  <div class="stream" data-stream-id="trainTheTrainer" data-stream-name="Train-the-Trainer Programs" data-timeframe="Long" data-size="Large" data-effort="High">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Train-the-Trainer Programs <span class="priority-tag long">Long-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('trainTheTrainer', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('trainTheTrainer', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('trainTheTrainer', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-trainTheTrainer" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Developing and licensing a curriculum/methodology; Innerloom trains & certifies external individuals (teachers, youth workers, peer leaders) to deliver programs.</li>
+        <li><strong>Pros:</strong> High scalability & impact, empowers local leaders, revenue from training/certification/materials/licensing, establishes Innerloom as knowledge leader.</li>
+        <li><strong>Cons:</strong> High upfront investment (curriculum, quality control, training infrastructure), maintaining quality assurance with third-party delivery, complexity in managing trainer network.</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Key for national/Nordic expansion, embedding support in schools/youth centers. Amplifies impact significantly.</li>
+      </ul>
+      <textarea id="notes-trainTheTrainer" class="assumption-input" placeholder="Curriculum development plan, target trainer profiles, certification process, quality assurance mechanisms..." onblur="saveNotes('trainTheTrainer')"></textarea>
+      <div id="longTermNote-trainTheTrainer" class="long-term-note" style="display:none;">This is a cornerstone for the <a href="long_term_planning.html">Long-Term Plan</a>.</div>
+    </div>
+  </div>
+
+  <div class="stream" data-stream-id="membershipFees" data-stream-name="Membership Fees" data-timeframe="Medium" data-size="Small-Medium" data-effort="Medium">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Membership Fees <span class="priority-tag medium">Medium-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('membershipFees', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('membershipFees', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('membershipFees', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-membershipFees" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Offering individual/organizational memberships with benefits (exclusive content, newsletters, event discounts, community forums, early access).</li>
+        <li><strong>Pros:</strong> Predictable income (potentially modest), fosters strong community, creates advocacy base, direct feedback loop.</li>
+        <li><strong>Cons:</strong> Requires compelling value proposition, administrative overhead (managing memberships/benefits), challenging to grow a large paying member base.</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Build "InnerLoom Friends" or "Mental Health Ambassadors" network. Focus on value beyond finance (peer support, activism). Tiered for students, professionals, organizations.</li>
+      </ul>
+      <textarea id="notes-membershipFees" class="assumption-input" placeholder="Membership tiers, benefits package, value proposition, community engagement strategy..." onblur="saveNotes('membershipFees')"></textarea>
+      <div id="longTermNote-membershipFees" class="long-term-note" style="display:none;">Building a strong member base can support the <a href="long_term_planning.html">Long-Term Plan</a>.</div>
+    </div>
+  </div>
+
+  <div class="stream" data-stream-id="events" data-stream-name="Events (Fundraising & Awareness)" data-timeframe="Short" data-size="Small-Medium" data-effort="Medium-High">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Events (Fundraising & Awareness) <span class="priority-tag short">Short-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('events', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('events', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('events', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-events" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Organizing workshops, seminars, conferences, fundraising dinners, community awareness campaigns. Revenue from tickets, sponsorships, on-site donations.</li>
+        <li><strong>Pros:</strong> High visibility & engagement, networking, attractive for corporate sponsors, direct fundraising potential.</li>
+        <li><strong>Cons:</strong> Resource-intensive (planning, logistics, staff/volunteers), financial risk (costs vs. attendance/sponsorship), time-limited impact.</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Community building, launching major campaigns, media attention, corporate sponsorships. Annual youth mental health symposium or regular workshops. Digital events reduce costs/broaden reach.</li>
+      </ul>
+      <textarea id="notes-events" class="assumption-input" placeholder="Key event concepts, target audience, sponsorship packages, volunteer needs..." onblur="saveNotes('events')"></textarea>
+      <div id="longTermNote-events" class="long-term-note" style="display:none;">Signature events can be part of the <a href="long_term_planning.html">Long-Term Plan</a>.</div>
+    </div>
+  </div>
+
+  <div class="stream" data-stream-id="otherIncome" data-stream-name="Other Income (Social Enterprise)" data-timeframe="Long" data-size="Variable" data-effort="High">
+    <div class="stream-header" onclick="toggleDetails(this)">
+      <h3>Other Income (Social Enterprise) <span class="priority-tag long">Long-Term</span></h3>
+      <div class="stream-actions">
+        <div class="priority-selector">
+            <button data-priority="focus" onclick="event.stopPropagation(); setPriority('otherIncome', 'focus', this)">Focus</button>
+            <button data-priority="consider" onclick="event.stopPropagation(); setPriority('otherIncome', 'consider', this)">Consider</button>
+            <button data-priority="later" onclick="event.stopPropagation(); setPriority('otherIncome', 'later', this)">Later</button>
+        </div>
+        <div class="action-buttons">
+          <a href="revenue_input.html#stream-otherIncome" class="btn-add-projection" onclick="event.stopPropagation();">Add to Projections</a>
+        </div>
+      </div>
+      <span class="toggler-icon">&#❯;</span>
+    </div>
+    <div class="stream-details">
+      <ul>
+        <li><strong>Description:</strong> Developing/selling mission-aligned products/services more commercially (branded merchandise, paid digital tools/apps, publications, consultancy).</li>
+        <li><strong>Pros:</strong> Diversification, innovation, self-sustaining revenue potential, risk mitigation, brand reinforcement, may attract social impact investors (via subsidiary).</li>
+        <li><strong>Cons:</strong> Potential mission drift, resource-intensive (business development, market research, capital), competitive markets, complexity with non-profit activities.</li>
+        <li><strong>Strategic Role for Innerloom:</strong> Long-term avenue for innovative, scalable solutions (e.g., specialized mental health app, school toolkits). Consider separate social enterprise arm if substantial. Merchandise with positive messaging.</li>
+        <li><strong>Swedish Context:</strong> Growing "socialt företagande" (social entrepreneurship) sector with support structures.</li>
+      </ul>
+      <textarea id="notes-otherIncome" class="assumption-input" placeholder="Social enterprise ideas, market validation plans, product development roadmap, potential legal structures..." onblur="saveNotes('otherIncome')"></textarea>
+      <div id="longTermNote-otherIncome" class="long-term-note" style="display:none;">Developing social enterprise models is central to the <a href="long_term_planning.html">Long-Term Plan</a>.</div>
+    </div>
+  </div>
+
+</div>
+<script>
+    const fundingStreamsData = [];
+    document.querySelectorAll('.stream').forEach(el => {
+        fundingStreamsData.push({
+            id: el.dataset.streamId,
+            name: el.dataset.streamName,
+            timeframe: el.dataset.timeframe,
+            size: el.dataset.size,
+            effort: el.dataset.effort,
+            isLongTerm: el.querySelector('.priority-tag.long') !== null
+        });
+    });
+
+    function toggleDetails(headerElement) {
+        const details = headerElement.nextElementSibling;
+        const icon = headerElement.querySelector('.toggler-icon');
+        details.classList.toggle('expanded');
+        headerElement.classList.toggle('expanded');
+    }
+
+    function populateSummaryTable() {
+        const tbody = document.getElementById('summaryTableBody');
+        tbody.innerHTML = '';
+        const priorities = loadPriorities();
+        const notes = loadAllNotes();
+
+        fundingStreamsData.forEach(stream => {
+            const priority = priorities[stream.id] || 'N/A';
+            let priorityDisplay = 'N/A';
+            if (priority === 'focus') priorityDisplay = '<span style="color:green; font-weight:bold;">Focus</span>';
+            else if (priority === 'consider') priorityDisplay = '<span style="color:orange; font-weight:bold;">Consider</span>';
+            else if (priority === 'later') priorityDisplay = '<span style="color:grey; font-weight:bold;">Later</span>';
+            
+            const streamNote = notes[stream.id] || '';
+            const shortNote = streamNote.length > 50 ? streamNote.substring(0, 50) + '...' : streamNote;
+
+            const row = `<tr>
+                <td>${stream.name}</td>
+                <td class="center-text">${stream.timeframe}</td>
+                <td class="center-text">${stream.size}</td>
+                <td class="center-text">${stream.effort}</td>
+                <td class="center-text" id="summary-priority-${stream.id}">${priorityDisplay}</td>
+                <td class="notes-cell" title="${streamNote}">${shortNote}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function setPriority(streamId, priorityValue, buttonElement) {
+        let priorities = loadPriorities();
+        const streamData = fundingStreamsData.find(s => s.id === streamId);
+        
+        if (priorities[streamId] === priorityValue) {
+            delete priorities[streamId]; // Toggle off
+        } else {
+            priorities[streamId] = priorityValue;
+        }
+        
+        localStorage.setItem('innerloomFundingPriorities', JSON.stringify(priorities));
+        updatePriorityButtons(streamId, priorities[streamId]);
+        updateLongTermNoteVisibility(streamId, priorities[streamId], streamData ? streamData.isLongTerm : false);
+        populateSummaryTable();
+        // event.stopPropagation(); // Already handled in the HTML onclick
+    }
+
+    function updateLongTermNoteVisibility(streamId, currentPriority, isStreamLongTerm) {
+        const noteDiv = document.getElementById(`longTermNote-${streamId}`);
+        if (noteDiv) {
+            if (isStreamLongTerm && currentPriority === 'focus') {
+                noteDiv.style.display = 'block';
+            } else {
+                noteDiv.style.display = 'none';
+            }
+        }
+    }
+    
+    function saveNotes(streamId) {
+        const notesText = document.getElementById(`notes-${streamId}`).value;
+        let allNotes = loadAllNotes();
+        allNotes[streamId] = notesText.trim();
+        localStorage.setItem('innerloomFundingNotes', JSON.stringify(allNotes));
+        populateSummaryTable();
+    }
+
+    function loadAllNotes() {
+        const storedNotes = localStorage.getItem('innerloomFundingNotes');
+        return storedNotes ? JSON.parse(storedNotes) : {};
+    }
+
+    function loadPriorities() {
+        const storedPriorities = localStorage.getItem('innerloomFundingPriorities');
+        return storedPriorities ? JSON.parse(storedPriorities) : {};
+    }
+
+    function updatePriorityButtons(streamId, activePriority) {
+        const streamElement = document.querySelector(`.stream[data-stream-id="${streamId}"]`);
+        if (streamElement) {
+            const buttons = streamElement.querySelectorAll('.priority-selector button');
+            buttons.forEach(btn => {
+                btn.classList.remove('selected-focus', 'selected-consider', 'selected-later');
+                if (btn.dataset.priority === activePriority) {
+                    btn.classList.add(`selected-${activePriority}`);
+                }
+            });
+        }
+    }
+    
+    function initializePage() {
+        const priorities = loadPriorities();
+        const allNotes = loadAllNotes();
+
+        document.querySelectorAll('.stream').forEach(streamDiv => {
+            const streamId = streamDiv.dataset.streamId;
+            const streamData = fundingStreamsData.find(s => s.id === streamId);
+
+            const notesTextarea = document.getElementById(`notes-${streamId}`);
+            if (notesTextarea && allNotes[streamId]) {
+                notesTextarea.value = allNotes[streamId];
+            }
+            if (priorities[streamId]) {
+                updatePriorityButtons(streamId, priorities[streamId]);
+                updateLongTermNoteVisibility(streamId, priorities[streamId], streamData ? streamData.isLongTerm : false);
+            }
+        });
+        populateSummaryTable();
+
+        document.querySelectorAll('.stream').forEach(streamDiv => {
+            const streamId = streamDiv.dataset.streamId;
+            const hasNotes = allNotes[streamId] && allNotes[streamId].length > 0;
+            const isFocus = priorities[streamId] === 'focus';
+            if (hasNotes || isFocus) {
+                 // Check if not already expanded to avoid issues if called multiple times
+                if (!streamDiv.querySelector('.stream-details').classList.contains('expanded')) {
+                    streamDiv.querySelector('.stream-header').click();
+                }
+            }
+        });
+    }
+
+    window.onload = initializePage;
+</script>
+</body>
+</html>

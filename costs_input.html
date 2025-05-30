@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innerloom Advanced Cost Inputs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif; background: #f9f9f9; color: #333;
+      margin: 0; padding: 20px; font-weight: 300; line-height: 1.6;
+    }
+    .container {
+      max-width: 850px; margin: 20px auto; background: #fff;
+      padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 { color: #262626; text-align: center; font-weight: 700; margin-bottom: 10px; }
+    h2 {
+      color: #65C9C2; font-weight: 600; margin-top: 30px; margin-bottom: 15px;
+      border-bottom: 2px solid #e0f2f1; padding-bottom: 8px;
+    }
+    h3.category-title {
+        color: #555; font-weight: 600; margin-top: 25px; margin-bottom: 10px;
+        font-size: 1.1em; border-top: 1px dashed #ccc; padding-top: 15px;
+    }
+    label { display: block; margin-top: 15px; font-weight: 400; color: #555; }
+    input[type="number"], input[type="text"], textarea {
+      width: calc(100% - 22px); padding: 10px; margin-top: 5px; border: 1px solid #ddd;
+      border-radius: 5px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 0.95em;
+    }
+    textarea.assumption-input {
+        min-height: 60px; font-size: 0.9em; margin-bottom: 10px;
+    }
+    input[type="checkbox"] { margin-right: 8px; vertical-align: middle; }
+    .checkbox-label { font-weight: 300; display: inline; }
+    .info { font-size: 0.85em; color: #777; margin-top: 5px; margin-bottom: 10px; }
+    .button-group { display: flex; gap: 10px; margin-top: 30px; }
+    button {
+      flex-grow: 1; padding: 12px; color: white; border: none;
+      border-radius: 5px; cursor: pointer; font-size: 1.05em; font-weight: 600;
+      transition: background-color 0.2s ease;
+    }
+    .btn-save { background-color: #65C9C2; }
+    .btn-save:hover { background-color: #5ABBAD; }
+    .btn-clear, .btn-reset { background-color: #777; }
+    .btn-clear:hover, .btn-reset:hover { background-color: #666; }
+
+    .saved-message {
+      text-align: center; color: #3c763d; background-color: #dff0d8;
+      padding: 10px; border-radius: 5px; margin-top: 20px; display: none;
+    }
+    .staff-cost-breakdown, .opcost-subcategory-summary {
+        background-color: #e8f8f7; padding: 15px; border-radius: 5px; margin-top: 10px;
+        border: 1px solid #b2dfdb; font-size: 0.9em;
+    }
+    .staff-cost-breakdown p, .opcost-subcategory-summary p { margin: 5px 0; }
+    .staff-cost-breakdown strong, .opcost-subcategory-summary strong { color: #004d40; }
+    .opcost-subcategory-summary { margin-bottom: 5px; } /* Reduced margin for tighter layout */
+
+    .opcost-chart-container {
+        margin-top: 25px; padding: 15px; background-color: #fafffe; border-radius: 8px;
+        border: 1px solid #d0e0df;
+    }
+    .opcost-chart-container h3 { color: #65C9C2; text-align:center; margin-bottom:15px;}
+    canvas#opCostCategoryChart { max-height: 250px; }
+  </style>
+</head>
+<body>
+<nav class="main-menu">
+  <ul>
+    <li><a href="landing.html">Inner Loom roadmap</a></li>
+    <li><a href="funding_strategy.html">Funding Ecosystem</a></li>
+    <li><a href="revenue_input.html">Revenue modeling</a></li>
+    <li><a href="costs_input.html">Costs modeling</a></li>
+    <li><a href="financial_dashboard.html">Inner Loom Financials</a></li>
+  </ul>
+</nav>
+  <div class="container">
+    <h1>Innerloom Advanced Cost Inputs</h1>
+    <h2 style="margin-top:10px;">Cost Structure (Monthly SEK)</h2>
+
+    <form id="costForm">
+      <!-- STAFF COSTS -->
+      <h2>Overheads & Staff Costs</h2>
+      <label for="netSalary">Average Net Salary per Employee (SEK, after personal income tax):</label>
+      <input type="number" id="netSalary" value="25000" oninput="updateStaffCostBreakdown()">
+      <div class="info">Enter the average monthly salary an employee receives.</div>
+
+      <label for="numEmployees">Number of Employees:</label>
+      <input type="number" id="numEmployees" value="1" oninput="updateStaffCostBreakdown()">
+
+      <label for="avgIncomeTaxRate">Assumed Average Income Tax Rate (%):</label>
+      <input type="number" id="avgIncomeTaxRate" value="30" oninput="updateStaffCostBreakdown()">
+      <div class="info">E.g., 30 for 30%. Used to estimate gross salary.</div>
+
+      <label>
+        <input type="checkbox" id="includePension" checked onchange="updateStaffCostBreakdown()">
+        <span class="checkbox-label">Include Occupational Pension (e.g., ITP1 type, ~4.5% of Gross)</span>
+      </label>
+
+      <label for="privateInsurancePerc">Other Private Employer Insurance (% of Gross Salary):</label>
+      <input type="number" id="privateInsurancePerc" value="1" oninput="updateStaffCostBreakdown()">
+      <div class="info">For TGL, extra health insurance, etc. E.g., 1 for 1%.</div>
+
+      <div class="staff-cost-breakdown" id="staffCostBreakdownOutput">
+        <p>Calculating staff cost breakdown...</p>
+      </div>
+      <label for="notes_staff">Staff Cost Assumptions/Notes:</label>
+      <textarea id="notes_staff" class="assumption-input" placeholder="Notes on salary levels, planned hires, benefits strategy..."></textarea>
+
+      <p class="info" style="margin-top:15px; font-weight:bold;">Note on Mandatory Employer Costs:</p>
+      <ul class="info" style="padding-left: 20px;">
+        <li><strong>Arbetsgivaravgifter (Social Security):</strong> ~31.42% of Gross.</li>
+        <li><strong>Semesterlön (Holiday Pay Provision):</strong> ~12% of Gross.</li>
+      </ul>
+
+      <!-- OPERATING COSTS -->
+      <h2>Operating Costs (Monthly SEK)</h2>
+
+      <div class="opcost-category" data-category-id="techWeb" data-category-name="Technology & Web">
+        <h3 class="category-title">Technology & Web</h3>
+        <label for="op_email">Email Services (e.g., Google Workspace):</label>
+        <input type="number" id="op_email" value="100" class="opcost-input" data-category="techWeb" oninput="debouncedUpdateOpCosts()">
+        <label for="op_canva">Canva (or similar design tool):</label>
+        <input type="number" id="op_canva" value="120" class="opcost-input" data-category="techWeb" oninput="debouncedUpdateOpCosts()">
+        <label for="op_domain">Web Domain & Hosting:</label>
+        <input type="number" id="op_domain" value="150" class="opcost-input" data-category="techWeb" oninput="debouncedUpdateOpCosts()">
+        <label for="op_webDev">Web Development & Maintenance:</label>
+        <input type="number" id="op_webDev" value="500" class="opcost-input" data-category="techWeb" oninput="debouncedUpdateOpCosts()">
+        <label for="op_chatgpt">ChatGPT Team / AI Tools Subscription:</label>
+        <input type="number" id="op_chatgpt" value="300" class="opcost-input" data-category="techWeb" oninput="debouncedUpdateOpCosts()">
+        <div class="opcost-subcategory-summary" id="summary_techWeb"><p>Category Subtotal: <strong>SEK 0</strong></p></div>
+        <label for="notes_techWeb">Tech & Web Assumptions/Notes:</label>
+        <textarea id="notes_techWeb" class="assumption-input" placeholder="Specific tool choices, planned upgrades, contract details..."></textarea>
+      </div>
+
+      <div class="opcost-category" data-category-id="officeAdmin" data-category-name="Office & Administration">
+        <h3 class="category-title">Office & Administration</h3>
+        <label for="op_bank">Bank Fees:</label>
+        <input type="number" id="op_bank" value="100" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
+        <label for="op_phone">Telephone Monthly Subscription (Organization):</label>
+        <input type="number" id="op_phone" value="300" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
+        <label for="op_computer">Computer/IT Equipment (Amortized/Lease):</label>
+        <input type="number" id="op_computer" value="800" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
+        <label for="op_office">Office Rent & Utilities:</label>
+        <input type="number" id="op_office" value="4000" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
+        <label for="op_supplies">Office Supplies:</label>
+        <input type="number" id="op_supplies" value="200" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
+        <label for="op_admin">Other Admin & Miscellaneous:</label>
+        <input type="number" id="op_admin" value="500" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
+        <div class="opcost-subcategory-summary" id="summary_officeAdmin"><p>Category Subtotal: <strong>SEK 0</strong></p></div>
+        <label for="notes_officeAdmin">Office & Admin Assumptions/Notes:</label>
+        <textarea id="notes_officeAdmin" class="assumption-input" placeholder="Office lease terms, utility estimates, expected admin support needs..."></textarea>
+      </div>
+
+      <div class="opcost-category" data-category-id="profServices" data-category-name="Professional Services & Insurance">
+        <h3 class="category-title">Professional Services & Insurance</h3>
+        <label for="op_accounting">Accounting & Audit:</label>
+        <input type="number" id="op_accounting" value="1500" class="opcost-input" data-category="profServices" oninput="debouncedUpdateOpCosts()">
+        <label for="op_insurance">General Business Insurance (Liability, etc.):</label>
+        <input type="number" id="op_insurance" value="800" class="opcost-input" data-category="profServices" oninput="debouncedUpdateOpCosts()">
+        <div class="opcost-subcategory-summary" id="summary_profServices"><p>Category Subtotal: <strong>SEK 0</strong></p></div>
+        <label for="notes_profServices">Professional Services Assumptions/Notes:</label>
+        <textarea id="notes_profServices" class="assumption-input" placeholder="Accountant fees, legal consultancy, insurance policy details..."></textarea>
+      </div>
+      
+      <div class="opcost-chart-container">
+        <h3>Operating Cost Category Breakdown</h3>
+        <canvas id="opCostCategoryChart"></canvas>
+      </div>
+
+
+      <div class="button-group">
+        <button type="button" class="btn-save" onclick="saveCosts()">Save Cost Inputs</button>
+        <button type="button" class="btn-clear" onclick="clearAllInputs()">Clear All Inputs</button>
+        <button type="button" class="btn-reset" onclick="resetToDefaults()">Reset to Defaults</button>
+      </div>
+      <div id="savedMessage" class="saved-message">Cost inputs saved! You can now view the dashboard.</div>
+    </form>
+  </div>
+
+  <script>
+    const initialValues = {
+        netSalary: 25000, numEmployees: 1, avgIncomeTaxRate: 30, includePension: true, privateInsurancePerc: 1,
+        op_email: 100, op_canva: 120, op_domain: 150, op_webDev: 500, op_chatgpt: 300,
+        op_bank: 100, op_phone: 300, op_computer: 800, op_office: 4000, op_supplies: 200, op_admin: 500,
+        op_accounting: 1500, op_insurance: 800,
+        notes_staff: '', notes_techWeb: '', notes_officeAdmin: '', notes_profServices: ''
+    };
+    const PENSION_RATE = 0.045;
+    const SOCIAL_SECURITY_RATE = 0.3142;
+    const HOLIDAY_PAY_RATE = 0.12;
+    let opCostCategoryChartInstance;
+    let debounceTimer;
+
+    function formatSEK_script(value) {
+      return (value || 0).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 });
+    }
+
+    function updateStaffCostBreakdown() {
+      const netSalary = parseFloat(document.getElementById('netSalary').value) || 0;
+      const numEmp = parseInt(document.getElementById('numEmployees').value) || 0;
+      const taxRateInput = parseFloat(document.getElementById('avgIncomeTaxRate').value) || 0;
+      const taxRate = taxRateInput > 1 ? taxRateInput / 100 : taxRateInput; // Allow entering 30 or 0.3
+      const includePension = document.getElementById('includePension').checked;
+      const privateInsPercInput = parseFloat(document.getElementById('privateInsurancePerc').value) || 0;
+      const privateInsPerc = privateInsPercInput > 1 ? privateInsPercInput / 100 : privateInsPercInput;
+
+
+      if (netSalary === 0 || numEmp === 0 || taxRate >= 1 || taxRate <=0 ) {
+          document.getElementById('staffCostBreakdownOutput').innerHTML = "<p>Please enter valid salary, employee count, and tax rate (e.g., 0.30 or 30).</p>";
+          return;
+      }
+
+      const grossSalaryPerEmp = netSalary / (1 - taxRate);
+      const socialSecPerEmp = grossSalaryPerEmp * SOCIAL_SECURITY_RATE;
+      const holidayPayPerEmp = grossSalaryPerEmp * HOLIDAY_PAY_RATE;
+      const pensionPerEmp = includePension ? (grossSalaryPerEmp * PENSION_RATE) : 0;
+      const privateInsPerEmp = grossSalaryPerEmp * privateInsPerc;
+      const totalCostPerEmp = grossSalaryPerEmp + socialSecPerEmp + holidayPayPerEmp + pensionPerEmp + privateInsPerEmp;
+      const totalMonthlyStaffCost = totalCostPerEmp * numEmp;
+
+      const breakdownDiv = document.getElementById('staffCostBreakdownOutput');
+      breakdownDiv.innerHTML = `
+        <p>Est. Gross Salary per Employee: <strong>${formatSEK_script(grossSalaryPerEmp)}</strong></p>
+        <p>Total Est. Gross Salaries (all staff): <strong>${formatSEK_script(grossSalaryPerEmp * numEmp)}</strong></p>
+        <p>Total Social Security Contributions: <strong>${formatSEK_script(socialSecPerEmp * numEmp)}</strong></p>
+        <p>Total Holiday Pay Provision: <strong>${formatSEK_script(holidayPayPerEmp * numEmp)}</strong></p>
+        <p>Total Occupational Pension: <strong>${formatSEK_script(pensionPerEmp * numEmp)}</strong></p>
+        <p>Total Other Private Insurance: <strong>${formatSEK_script(privateInsPerEmp * numEmp)}</strong></p>
+        <hr style="border-color: #b2dfdb; border-style: dashed;">
+        <p>Total Monthly Staff Cost: <strong style="font-size:1.1em;">${formatSEK_script(totalMonthlyStaffCost)}</strong></p>
+      `;
+    }
+
+    function updateAllOpCostSubtotalsAndChart() {
+        let categoryTotals = {};
+        let grandTotalOpCost = 0;
+
+        document.querySelectorAll('.opcost-category').forEach(categoryDiv => {
+            const categoryId = categoryDiv.dataset.categoryId;
+            const categoryName = categoryDiv.dataset.categoryName;
+            let categoryTotal = 0;
+            document.querySelectorAll(`.opcost-input[data-category="${categoryId}"]`).forEach(input => {
+                categoryTotal += parseFloat(input.value) || 0;
+            });
+            const summaryDiv = document.getElementById(`summary_${categoryId}`);
+            if (summaryDiv) {
+                summaryDiv.innerHTML = `<p>${categoryName} Subtotal: <strong>${formatSEK_script(categoryTotal)}</strong></p>`;
+            }
+            categoryTotals[categoryName] = categoryTotal; // Use name for chart label
+            grandTotalOpCost += categoryTotal;
+        });
+        renderOpCostCategoryChart(categoryTotals);
+    }
+    
+    const debouncedUpdateOpCosts = () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(updateAllOpCostSubtotalsAndChart, 300); // 300ms delay
+    };
+
+
+    function renderOpCostCategoryChart(categoryTotals) {
+        const ctx = document.getElementById('opCostCategoryChart').getContext('2d');
+        const labels = Object.keys(categoryTotals);
+        const data = Object.values(categoryTotals);
+
+        const backgroundColors = [
+            'rgba(101, 201, 194, 0.7)', // Innerloom Teal
+            'rgba(255, 182, 193, 0.7)', // Light Pink
+            'rgba(255, 218, 185, 0.7)', // Peach
+            'rgba(173, 216, 230, 0.7)', // Light Blue
+            'rgba(240, 230, 140, 0.7)', // Khaki
+        ];
+        const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+
+
+        if (opCostCategoryChartInstance) {
+            opCostCategoryChartInstance.destroy();
+        }
+        opCostCategoryChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Operating Cost Breakdown',
+                    data: data,
+                    backgroundColor: backgroundColors.slice(0, labels.length),
+                    borderColor: borderColors.slice(0, labels.length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { font: { size: 10 }}},
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed !== null) {
+                                    label += formatSEK_script(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+    function saveCosts() {
+      const costData = {
+        netSalary: parseFloat(document.getElementById('netSalary').value) || 0,
+        numEmployees: parseInt(document.getElementById('numEmployees').value) || 0,
+        avgIncomeTaxRate: (parseFloat(document.getElementById('avgIncomeTaxRate').value) / 100) || 0.30,
+        includePension: document.getElementById('includePension').checked,
+        pensionRate: PENSION_RATE,
+        privateInsurancePerc: (parseFloat(document.getElementById('privateInsurancePerc').value) / 100) || 0,
+        socialSecurityRate: SOCIAL_SECURITY_RATE,
+        holidayPayRate: HOLIDAY_PAY_RATE,
+        notes_staff: document.getElementById('notes_staff').value.trim(),
+        notes_techWeb: document.getElementById('notes_techWeb').value.trim(),
+        notes_officeAdmin: document.getElementById('notes_officeAdmin').value.trim(),
+        notes_profServices: document.getElementById('notes_profServices').value.trim()
+      };
+      document.querySelectorAll('.opcost-input').forEach(input => {
+          costData[input.id] = parseFloat(input.value) || 0;
+      });
+
+      localStorage.setItem('innerloomCostInputs', JSON.stringify(costData));
+      const savedMsg = document.getElementById('savedMessage');
+      savedMsg.style.display = 'block';
+      setTimeout(() => { savedMsg.style.display = 'none'; }, 3000);
+      console.log('Costs saved:', costData);
+    }
+
+    function clearAllInputs() {
+        if (!confirm("Are you sure you want to clear all input fields? This cannot be undone unless you save first.")) return;
+        document.querySelectorAll('#costForm input[type="number"]').forEach(input => input.value = '0');
+        document.querySelectorAll('#costForm textarea').forEach(textarea => textarea.value = '');
+        document.getElementById('includePension').checked = false;
+        updateStaffCostBreakdown();
+        updateAllOpCostSubtotalsAndChart();
+    }
+
+    function resetToDefaults() {
+        if (!confirm("Are you sure you want to reset all fields to their default values? Unsaved changes will be lost.")) return;
+        for (const id in initialValues) {
+            const element = document.getElementById(id);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = initialValues[id];
+                } else {
+                    element.value = initialValues[id];
+                }
+            }
+        }
+        updateStaffCostBreakdown();
+        updateAllOpCostSubtotalsAndChart();
+    }
+    
+    function resetToDefaultsWithoutConfirm() { // For initial load if no saved data
+        for (const id in initialValues) {
+            const element = document.getElementById(id);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = initialValues[id];
+                } else {
+                    element.value = initialValues[id];
+                }
+            }
+        }
+    }
+
+    function loadCosts() {
+        const savedData = localStorage.getItem('innerloomCostInputs');
+        if (savedData) {
+            const costData = JSON.parse(savedData);
+            document.getElementById('netSalary').value = costData.netSalary !== undefined ? costData.netSalary : initialValues.netSalary;
+            document.getElementById('numEmployees').value = costData.numEmployees !== undefined ? costData.numEmployees : initialValues.numEmployees;
+            document.getElementById('avgIncomeTaxRate').value = costData.avgIncomeTaxRate !== undefined ? (costData.avgIncomeTaxRate * 100) : initialValues.avgIncomeTaxRate;
+            document.getElementById('includePension').checked = costData.includePension !== undefined ? costData.includePension : initialValues.includePension;
+            document.getElementById('privateInsurancePerc').value = costData.privateInsurancePerc !== undefined ? (costData.privateInsurancePerc * 100) : initialValues.privateInsurancePerc;
+
+            document.querySelectorAll('.opcost-input').forEach(input => {
+                input.value = costData[input.id] !== undefined ? costData[input.id] : (initialValues[input.id] || 0);
+            });
+            document.getElementById('notes_staff').value = costData.notes_staff || initialValues.notes_staff;
+            document.getElementById('notes_techWeb').value = costData.notes_techWeb || initialValues.notes_techWeb;
+            document.getElementById('notes_officeAdmin').value = costData.notes_officeAdmin || initialValues.notes_officeAdmin;
+            document.getElementById('notes_profServices').value = costData.notes_profServices || initialValues.notes_profServices;
+
+        } else {
+            resetToDefaultsWithoutConfirm();
+        }
+        updateStaffCostBreakdown();
+        updateAllOpCostSubtotalsAndChart(); // Ensures chart and subtotals are rendered on load
+    }
+
+    window.onload = loadCosts;
+  </script>
+</body>
+</html>

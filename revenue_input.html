@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innerloom Advanced Revenue Inputs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif; background: #f9f9f9; color: #333;
+      margin: 0; padding: 20px; font-weight: 300; line-height: 1.6;
+    }
+    .container {
+      max-width: 1300px; margin: 20px auto; background: #fff;
+      padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 { color: #262626; text-align: center; font-weight: 700; margin-bottom: 10px; }
+    h2 {
+      color: #65C9C2; font-weight: 600; margin-top: 30px; margin-bottom: 20px;
+      border-bottom: 2px solid #e0f2f1; padding-bottom: 8px;
+    }
+    .revenue-stream {
+        margin-bottom: 30px; padding-bottom: 25px;
+        border-bottom: 2px solid #e8f8f7; /* Thicker, lighter border */
+    }
+    .revenue-stream:last-child { border-bottom: none; }
+    .stream-header { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .stream-header h3 { font-weight: 600; color: #444; margin-bottom: 5px; margin-right: 15px; flex-basis: 100%; }
+    .stream-controls { display: flex; align-items: center; gap: 10px; margin-bottom:15px; flex-wrap: wrap; }
+    .stream-controls input[type="number"] { width: 100px; font-size:0.85em; padding: 6px; }
+    .stream-controls button { font-size: 0.8em; padding: 6px 12px; background-color: #e0e0e0; color:#333; border: 1px solid #ccc; }
+    .stream-controls button:hover { background-color: #d0d0d0; }
+    .stream-controls label { font-size: 0.85em; margin-right: 5px; }
+
+    .monthly-inputs-grid { /* Renamed for clarity */
+      display: grid;
+      grid-template-columns: repeat(13, 1fr); /* 12 months + 1 annual total */
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px; /* Space before notes/chart */
+    }
+    .month-label-header, .annual-total-label-header { /* For the main header row */
+      font-size: 0.85em; color: #555; font-weight: 600; text-align: center; padding-bottom: 5px;
+    }
+    .monthly-inputs-grid input[type="number"] {
+      width: 100%; padding: 8px; border: 1px solid #ddd;
+      border-radius: 5px; box-sizing: border-box; font-family: 'Poppins', sans-serif;
+      font-size: 0.9em; text-align: right;
+    }
+    .monthly-inputs-grid input.has-value { background-color: #e8f8f7; }
+    .annual-total-value-cell { /* Renamed for clarity */
+        font-size: 0.95em; text-align: right; font-weight: bold; color: #004d40;
+        padding: 8px; background-color: #f0f7f7; border-radius: 5px; border: 1px solid #b2dfdb;
+    }
+    textarea.assumption-input {
+        width: calc(100% - 22px); margin-top:10px; margin-bottom:15px; padding: 8px; border-radius: 4px;
+        border: 1px solid #ddd; font-size: 0.9em; min-height: 50px;
+    }
+    .stream-phasing-chart-container {
+        height: 150px; /* Fixed height for consistency */
+        margin-bottom: 15px;
+    }
+
+    .grand-total-section {
+        margin-top: 30px; padding: 20px 0; border-top: 2px solid #65C9C2;
+        text-align: right; font-size: 1.2em; font-weight: bold;
+    }
+    .grand-total-section span { color: #004d40; }
+
+    .overall-revenue-mix-chart-container {
+        margin-top:25px; padding: 20px; background-color: #fafffe;
+        border-radius: 8px; border:1px solid #d0e0df;
+    }
+    .overall-revenue-mix-chart-container h3 { color: #65C9C2; text-align:center; margin-bottom:15px;}
+    canvas#overallRevenueMixChart { max-height: 300px; }
+
+
+    button.main-save-btn {
+      display: block; width: 100%; padding: 12px; background-color: #65C9C2;
+      color: white; border: none; border-radius: 5px; cursor: pointer;
+      font-size: 1.1em; font-weight: 600; margin-top: 30px; transition: background-color 0.2s ease;
+    }
+    button.main-save-btn:hover { background-color: #5ABBAD; }
+    .saved-message {
+      text-align: center; color: #3c763d; background-color: #dff0d8;
+      padding: 10px; border-radius: 5px; margin-top: 20px; display: none;
+    }
+  </style>
+</head>
+<body>
+<nav class="main-menu">
+  <ul>
+    <li><a href="landing.html">Inner Loom roadmap</a></li>
+    <li><a href="funding_strategy.html">Funding Ecosystem</a></li>
+    <li><a href="revenue_input.html">Revenue modeling</a></li>
+    <li><a href="costs_input.html">Costs modeling</a></li>
+    <li><a href="financial_dashboard.html">Inner Loom Financials</a></li>
+  </ul>
+</nav>
+  <div class="container">
+    <h1>Innerloom Advanced Revenue Inputs</h1>
+    <h2 style="margin-top:10px;">Revenue Streams (Monthly SEK)</h2>
+    <p class="info" style="text-align:center; margin-bottom:20px;">Enter projected revenue for each stream for the next 12 months. Use controls for quick population. Add notes for assumptions.</p>
+
+    <form id="revenueForm">
+      <div class="monthly-inputs-grid" id="mainMonthHeaderGrid">
+          <!-- Dynamically generated month headers + Annual Total Header -->
+      </div>
+      <div id="revenueStreamsContainer">
+          <!-- Revenue streams will be dynamically generated -->
+      </div>
+
+      <div class="grand-total-section">
+        Total Projected Annual Revenue: <span id="grandAnnualTotal">SEK 0</span>
+      </div>
+
+      <div class="overall-revenue-mix-chart-container">
+        <h3>Overall Annual Revenue Mix</h3>
+        <canvas id="overallRevenueMixChart"></canvas>
+      </div>
+
+      <button type="button" class="main-save-btn" onclick="saveRevenues()">Save Revenue Inputs</button>
+      <div id="savedMessage" class="saved-message">Revenue inputs saved! You can now view the dashboard.</div>
+    </form>
+  </div>
+
+  <script>
+    const revenueStreams = [
+      { id: 'crowdfunding', name: 'Crowdfunding' }, { id: 'sponsorship', name: 'Sponsored Programs (Indiv. & Corp.)' },
+      { id: 'grants', name: 'Grants and funds (Public & Private)' }, { id: 'programfee', name: 'Program fees' },
+      { id: 'trainTheTrainer', name: 'Train-the-Trainer Programs' }, { id: 'membershipFees', name: 'Student Membership Fees' },
+      { id: 'events', name: 'Events (Fundraising & Aware.), e.g. World Mental Health day' }, { id: 'otherIncome', name: 'Other Income (Social Ent.)' }
+    ];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    let streamChartInstances = {}; // To store chart instances for each stream
+    let overallMixChartInstance;
+    let debounceTimerRevenue;
+
+
+    function formatSEK_revenue(value) {
+      return (value || 0).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 });
+    }
+
+    function generateRevenueInputFields() {
+      const container = document.getElementById('revenueStreamsContainer');
+      container.innerHTML = ''; 
+
+      const monthHeaderGrid = document.getElementById('mainMonthHeaderGrid');
+      monthHeaderGrid.innerHTML = ''; 
+      months.forEach(month => {
+          const labelDiv = document.createElement('div');
+          labelDiv.classList.add('month-label-header');
+          labelDiv.textContent = month;
+          monthHeaderGrid.appendChild(labelDiv);
+      });
+      const annualHeaderDiv = document.createElement('div');
+      annualHeaderDiv.classList.add('annual-total-label-header');
+      annualHeaderDiv.textContent = 'Annual Total';
+      monthHeaderGrid.appendChild(annualHeaderDiv);
+
+      revenueStreams.forEach(stream => {
+        const streamDiv = document.createElement('div');
+        streamDiv.classList.add('revenue-stream');
+        streamDiv.id = `stream-${stream.id}`; 
+
+        let streamHTML = `<div class="stream-header"><h3>${stream.name}</h3></div>`;
+        streamHTML += `<div class="stream-controls">
+            <label for="${stream.id}_apply_all_value">Set all to:</label>
+            <input type="number" id="${stream.id}_apply_all_value" placeholder="Value" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <button type="button" onclick="applyToAllMonths('${stream.id}')">Apply Flat</button>
+            <span style="margin-left:10px;">|</span>
+            <label for="${stream.id}_start_val" style="margin-left:10px;">Start M1:</label>
+            <input type="number" id="${stream.id}_start_val" placeholder="Start Val" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <label for="${stream.id}_growth_perc">Growth (%):</label>
+            <input type="number" id="${stream.id}_growth_perc" placeholder="% /mo">
+            <button type="button" onclick="applyGrowth('${stream.id}')">Apply Growth</button>
+        </div>`;
+        
+        streamDiv.innerHTML = streamHTML; // Add header and controls
+
+        const monthlyInputsDiv = document.createElement('div');
+        monthlyInputsDiv.classList.add('monthly-inputs-grid');
+        months.forEach((month, index) => {
+          monthlyInputsDiv.innerHTML += `
+            <div><input type="number" id="${stream.id}_${index}" value="0" oninput="debouncedUpdateStream('${stream.id}'); highlightInput(this);"></div>`;
+        });
+        monthlyInputsDiv.innerHTML += `<div id="${stream.id}_annual_total" class="annual-total-value-cell">${formatSEK_revenue(0)}</div>`;
+        streamDiv.appendChild(monthlyInputsDiv);
+
+        streamDiv.innerHTML += `<label for="notes-${stream.id}" style="font-weight:500; margin-top:5px;">Assumptions/Notes for ${stream.name}:</label>
+                                <textarea id="notes-${stream.id}" class="assumption-input" placeholder="Enter specific assumptions, targets, or notes for this revenue stream..."></textarea>`;
+        
+        const chartContainer = document.createElement('div');
+        chartContainer.classList.add('stream-phasing-chart-container');
+        chartContainer.innerHTML = `<canvas id="chart-${stream.id}"></canvas>`;
+        streamDiv.appendChild(chartContainer);
+        
+        container.appendChild(streamDiv);
+        renderStreamPhasingChart(stream.id, Array(12).fill(0)); // Initial empty chart
+      });
+      debouncedUpdateAllTotalsAndCharts(); 
+    }
+
+    function highlightInput(inputElement) {
+        inputElement.value = inputElement.value.replace(/[^0-9]/g, ''); // Allow only numbers
+        if (parseFloat(inputElement.value) > 0) {
+            inputElement.classList.add('has-value');
+        } else {
+            inputElement.classList.remove('has-value');
+        }
+    }
+    
+    const debouncedUpdateStream = (streamId) => {
+        clearTimeout(debounceTimerRevenue);
+        debounceTimerRevenue = setTimeout(() => {
+            updateStreamAnnualTotalAndChart(streamId);
+            debouncedUpdateAllTotalsAndCharts(); // Also update grand total and overall mix chart
+        }, 350); // Slightly longer delay for stream-specific updates
+    };
+
+    const debouncedUpdateAllTotalsAndCharts = () => { // For overall updates
+        clearTimeout(debounceTimerRevenue);
+        debounceTimerRevenue = setTimeout(() => {
+            updateGrandAnnualTotal();
+            updateOverallRevenueMixChart();
+        }, 400);
+    };
+
+
+    function applyToAllMonths(streamId) {
+        const valueToApply = parseFloat(document.getElementById(`${streamId}_apply_all_value`).value) || 0;
+        months.forEach((_, index) => {
+            const inputField = document.getElementById(`${streamId}_${index}`);
+            if (inputField) {
+                inputField.value = valueToApply;
+                highlightInput(inputField);
+            }
+        });
+        updateStreamAnnualTotalAndChart(streamId);
+        debouncedUpdateAllTotalsAndCharts();
+    }
+
+    function applyGrowth(streamId) {
+        const startValueEl = document.getElementById(`${streamId}_start_val`);
+        const growthPercEl = document.getElementById(`${streamId}_growth_perc`);
+        const startValue = parseFloat(startValueEl.value) || 0;
+        const growthPerc = parseFloat(growthPercEl.value) / 100; // Keep as decimal
+
+        if (isNaN(startValue)) { alert("Please enter a valid Start Value."); startValueEl.focus(); return; }
+        // Allow 0 or negative growth
+        if (growthPercEl.value.trim() !== "" && isNaN(growthPerc)) { alert("Please enter a valid Monthly Growth % or leave blank for 0%."); growthPercEl.focus(); return;}
+
+
+        let currentValue = startValue;
+        months.forEach((_, index) => {
+            const inputField = document.getElementById(`${streamId}_${index}`);
+            if (inputField) {
+                inputField.value = Math.max(0, currentValue.toFixed(0)); // Ensure non-negative
+                highlightInput(inputField);
+                currentValue *= (1 + (growthPerc || 0) ); // Apply growth or 0 if blank/invalid
+            }
+        });
+        updateStreamAnnualTotalAndChart(streamId);
+        debouncedUpdateAllTotalsAndCharts();
+    }
+
+    function updateStreamAnnualTotalAndChart(streamId) {
+        let annualTotal = 0;
+        const monthlyData = [];
+        months.forEach((_, index) => {
+            const val = parseFloat(document.getElementById(`${streamId}_${index}`).value) || 0;
+            annualTotal += val;
+            monthlyData.push(val);
+        });
+        document.getElementById(`${streamId}_annual_total`).textContent = formatSEK_revenue(annualTotal);
+        renderStreamPhasingChart(streamId, monthlyData);
+        // Grand total and overall mix will be updated by the debounced wrapper
+    }
+
+    function renderStreamPhasingChart(streamId, data) {
+        const ctx = document.getElementById(`chart-${streamId}`).getContext('2d');
+        if (streamChartInstances[streamId]) {
+            streamChartInstances[streamId].destroy();
+        }
+        streamChartInstances[streamId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Monthly Projection (SEK)', data: data,
+                    backgroundColor: 'rgba(101, 201, 194, 0.6)', // Innerloom Teal semi-transparent
+                    borderColor: 'rgba(101, 201, 194, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, title: { display: false } }, // Minimalist for small chart
+                scales: {
+                    y: { beginAtZero: true, ticks: { font: {size: 9}, callback: value => formatSEK_revenue(value).replace('SEK','').trim() } },
+                    x: { ticks: { font: {size: 9} } }
+                }
+            }
+        });
+    }
+
+    function updateGrandAnnualTotal() {
+        let grandTotal = 0;
+        revenueStreams.forEach(stream => {
+            months.forEach((_, index) => {
+                grandTotal += parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0;
+            });
+        });
+        document.getElementById('grandAnnualTotal').textContent = formatSEK_revenue(grandTotal);
+    }
+    
+    function updateOverallRevenueMixChart() {
+        const annualTotalsPerStream = {};
+        revenueStreams.forEach(stream => {
+            let streamAnnualTotal = 0;
+            months.forEach((_, index) => {
+                streamAnnualTotal += parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0;
+            });
+            if (streamAnnualTotal > 0) { // Only include streams with revenue for a cleaner chart
+                annualTotalsPerStream[stream.name] = streamAnnualTotal;
+            }
+        });
+
+        const ctx = document.getElementById('overallRevenueMixChart').getContext('2d');
+        const labels = Object.keys(annualTotalsPerStream);
+        const data = Object.values(annualTotalsPerStream);
+        const backgroundColors = [
+            '#65C9C2', '#FFB6C1', '#FFDAB9', '#ADD8E6', '#F0E68C',
+            '#DDA0DD', '#98FB98', '#FFE4B5' 
+        ].slice(0, labels.length);
+
+
+        if (overallMixChartInstance) {
+            overallMixChartInstance.destroy();
+        }
+        overallMixChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Annual Revenue Mix', data: data,
+                    backgroundColor: backgroundColors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: {font: {size: 10}}},
+                    tooltip: { callbacks: { label: context => `${context.label}: ${formatSEK_revenue(context.parsed)} (${((context.parsed / data.reduce((a,b)=>a+b,0)) * 100).toFixed(1)}%)` }}
+                }
+            }
+        });
+    }
+
+
+    function saveRevenues() {
+      const revenueData = { monthlyInputs: {}, notes: {} };
+      revenueStreams.forEach(stream => {
+        revenueData.monthlyInputs[stream.id] = [];
+        months.forEach((_, index) => {
+          revenueData.monthlyInputs[stream.id][index] = parseFloat(document.getElementById(`${stream.id}_${index}`).value) || 0;
+        });
+        revenueData.notes[stream.id] = document.getElementById(`notes-${stream.id}`).value.trim();
+      });
+
+      localStorage.setItem('innerloomRevenueInputsAdvanced', JSON.stringify(revenueData));
+      const savedMsg = document.getElementById('savedMessage');
+      savedMsg.style.display = 'block';
+      setTimeout(() => { savedMsg.style.display = 'none'; }, 3000);
+    }
+    
+    function loadRevenues() {
+        const savedData = localStorage.getItem('innerloomRevenueInputsAdvanced');
+        if (savedData) {
+            const revenueData = JSON.parse(savedData);
+            revenueStreams.forEach(stream => {
+                if (revenueData.monthlyInputs && revenueData.monthlyInputs[stream.id] && Array.isArray(revenueData.monthlyInputs[stream.id])) {
+                    const monthlyValues = [];
+                    months.forEach((_, index) => {
+                        const inputField = document.getElementById(`${stream.id}_${index}`);
+                        const val = revenueData.monthlyInputs[stream.id][index] || 0;
+                        if (inputField) {
+                            inputField.value = val;
+                            highlightInput(inputField);
+                        }
+                        monthlyValues.push(val);
+                    });
+                    updateStreamAnnualTotalAndChart(stream.id); // Will also call render
+                }
+                if (revenueData.notes && revenueData.notes[stream.id]) {
+                    document.getElementById(`notes-${stream.id}`).value = revenueData.notes[stream.id];
+                }
+            });
+        }
+        debouncedUpdateAllTotalsAndCharts(); // Final update for grand total and overall mix chart
+
+        if(window.location.hash) {
+            const targetId = window.location.hash.substring(1); // Assumes direct ID like stream-crowdfunding
+            const targetElement = document.getElementById(targetId);
+            if(targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetElement.style.transition = 'background-color 0.5s ease-out';
+                targetElement.style.backgroundColor = '#e0f2f1'; 
+                setTimeout(() => { targetElement.style.backgroundColor = ''; }, 2500);
+            }
+        }
+    }
+
+    window.onload = () => {
+        generateRevenueInputFields();
+        loadRevenues();
+    };
+  </script>
+</body>
+</html>

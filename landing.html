@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="sv-SE">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innerloom - Vision & Dynamiska Intäktsdrivare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<nav class="main-menu">
+  <ul>
+    <li><a href="landing.html">Inner Loom roadmap</a></li>
+    <li><a href="funding_strategy.html">Funding Ecosystem</a></li>
+    <li><a href="revenue_input.html">Revenue modeling</a></li>
+    <li><a href="costs_input.html">Costs modeling</a></li>
+    <li><a href="financial_dashboard.html">Inner Loom Financials</a></li>
+  </ul>
+</nav>
+  <div class="hero-header">
+    <h1>Vår vision</h1>
+    <p>Ett inkluderande samhälle där förståelse, kunskap och stöd för sin psykiska hälsa är en självklarhet.</p>
+  </div>
+
+  <div class="container">
+    <div class="section">
+      <h2>Key Revenue Drivers & Assumptions</h2>
+      <div class="input-group">
+        <div>
+          <label for="numYears">Planning Horizon (Years):</label>
+          <input type="number" id="numYears" value="3" min="1" max="7" onchange="regenerateTableAndLoadData()">
+        </div>
+        <div>
+          <label for="startYear">Starting Year:</label>
+          <input type="number" id="startYear" value="2025" onchange="regenerateTableAndLoadData()">
+        </div>
+      </div>
+      <div class="input-group">
+        <div>
+          <label for="peoplePerProgram">Avg. People per Program/Project:</label>
+          <input type="number" id="peoplePerProgram" value="20" min="1">
+        </div>
+        <div>
+          <label for="pricePerPerson">Avg. Price per Person (SEK):</label>
+          <input type="number" id="pricePerPerson" value="500" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>University Projects Planner</h2>
+      <p class="info-text">Define universities and project counts. Click on a university name to edit it.</p>
+      <div class="add-university-group">
+        <label for="newUniversityName" style="margin-bottom:0; align-self:center;">Add New University:</label>
+        <input type="text" id="newUniversityName" placeholder="University Name">
+        <button class="control-button" onclick="addUniversity()">Add University</button>
+      </div>
+      <div id="projectsTableContainer" style="overflow-x: auto;">
+        <!-- Projects table will be generated here by JS -->
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Projected Revenue from University Programs</h2>
+      <button class="control-button" onclick="calculateAndDisplayRevenue()">Calculate & Save Revenue Projection</button>
+      <p class="info-text" style="font-size:0.8em; margin-top:10px;">This calculation will also update the 'Program Fees' line in the main Revenue Inputs and Long-Term Plan.</p>
+      <div id="revenueResultsContainer" style="margin-top: 20px;">
+        <!-- Revenue results table will be generated here -->
+      </div>
+      <div class="chart-container">
+        <canvas id="revenueTrendChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="nav-links">
+        <a href="financial_dashboard.html">« Back to Main Dashboard</a>
+    </div>
+
+  </div>
+
+<script>
+    let universities = [ 
+        { id: 'uni_stockholm', name: 'Stockholms universitet' },
+        { id: 'uni_uppsala', name: 'Uppsala universitet' },
+        { id: 'uni_lund', name: 'Lunds universitet' }
+    ];
+    let revenueTrendChartInstance;
+    const STRATEGY_DATA_KEY = 'innerloomStrategyDrivers';
+    const PROGRAM_FEES_EXPORT_KEY = 'innerloomCalculatedProgramFees'; // For other pages
+
+    function formatSEK_strat(value) { return (Number(value) || 0).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 }); }
+
+    function regenerateTableAndLoadData() {
+        // Called when numYears or startYear changes
+        generateProjectsTableStructure(); // Rebuild table structure
+        loadData(); // Reload data which will fill based on potentially new structure
+    }
+
+    function generateProjectsTableStructure() {
+        const container = document.getElementById('projectsTableContainer');
+        const numYears = parseInt(document.getElementById('numYears').value) || 3;
+        const startYearVal = parseInt(document.getElementById('startYear').value) || new Date().getFullYear();
+        
+        container.innerHTML = ''; 
+        const table = document.createElement('table');
+        table.classList.add('projects-table');
+        
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+        let th = document.createElement('th');
+        th.textContent = 'Universitet (Click to Edit)';
+        headerRow.appendChild(th);
+        for (let i = 0; i < numYears; i++) {
+            th = document.createElement('th');
+            th.textContent = `${startYearVal + i}`;
+            headerRow.appendChild(th);
+        }
+        th = document.createElement('th');
+        th.textContent = 'Actions';
+        headerRow.appendChild(th);
+
+
+        const tbody = table.createTBody();
+        tbody.id = 'universityProjectsBody'; // For easier access
+        universities.forEach(uni => addUniversityRowToTable(uni, tbody, numYears, startYearVal));
+        
+        container.appendChild(table);
+    }
+
+    function addUniversityRowToTable(uni, tbody, numYears, startYearVal) {
+        const row = tbody.insertRow();
+        row.dataset.uniId = uni.id; // Store uni_id for easy reference
+        
+        let cell = row.insertCell();
+        cell.textContent = uni.name;
+        cell.classList.add('row-header');
+        cell.title = "Click to edit name";
+        cell.onclick = () => editUniversityName(cell, uni.id);
+
+        for (let i = 0; i < numYears; i++) {
+            cell = row.insertCell();
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.id = `projects_${uni.id}_${startYearVal + i}`;
+            input.value = '0'; 
+            input.min = '0';
+            input.onchange = saveData; // Save on change of project numbers
+            cell.appendChild(input);
+        }
+        // Action cell for remove button
+        cell = row.insertCell();
+        cell.classList.add('action-cell');
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'X';
+        removeBtn.title = `Remove ${uni.name}`;
+        removeBtn.onclick = () => removeUniversity(uni.id);
+        cell.appendChild(removeBtn);
+    }
+
+    function addUniversity() {
+        const nameInput = document.getElementById('newUniversityName');
+        const newName = nameInput.value.trim();
+        if (!newName) {
+            alert("Please enter a university name.");
+            return;
+        }
+        if (universities.find(u => u.name.toLowerCase() === newName.toLowerCase())) {
+            alert("A university with this name already exists.");
+            return;
+        }
+        const newId = `uni_${Date.now()}_${newName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`;
+        const newUni = { id: newId, name: newName };
+        universities.push(newUni);
+        
+        const tbody = document.getElementById('universityProjectsBody');
+        const numYears = parseInt(document.getElementById('numYears').value) || 3;
+        const startYearVal = parseInt(document.getElementById('startYear').value) || new Date().getFullYear();
+        if (tbody) {
+            addUniversityRowToTable(newUni, tbody, numYears, startYearVal);
+        }
+        nameInput.value = ''; // Clear input
+        saveData();
+    }
+
+    function editUniversityName(cell, uniId) {
+        const currentName = cell.textContent;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.style.width = '90%'; // Adjust as needed
+        cell.innerHTML = ''; // Clear current content
+        cell.appendChild(input);
+        input.focus();
+
+        const saveEdit = () => {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName) {
+                const uniIndex = universities.findIndex(u => u.id === uniId);
+                if (uniIndex !== -1) {
+                    universities[uniIndex].name = newName;
+                    cell.textContent = newName;
+                    saveData();
+                }
+            } else {
+                cell.textContent = currentName; // Revert if no change or empty
+            }
+            input.removeEventListener('blur', saveEdit);
+            input.removeEventListener('keydown', handleKeydown);
+        };
+        
+        const handleKeydown = (event) => {
+            if (event.key === 'Enter') {
+                saveEdit();
+            } else if (event.key === 'Escape') {
+                cell.textContent = currentName; // Revert
+                input.removeEventListener('blur', saveEdit);
+                input.removeEventListener('keydown', handleKeydown);
+            }
+        };
+
+        input.addEventListener('blur', saveEdit);
+        input.addEventListener('keydown', handleKeydown);
+    }
+    
+    function removeUniversity(uniId) {
+        if (!confirm("Are you sure you want to remove this university and its project data?")) return;
+        universities = universities.filter(u => u.id !== uniId);
+        // Regenerate table rows based on updated universities array
+        const tbody = document.getElementById('universityProjectsBody');
+        const numYears = parseInt(document.getElementById('numYears').value) || 3;
+        const startYearVal = parseInt(document.getElementById('startYear').value) || new Date().getFullYear();
+        tbody.innerHTML = ''; // Clear existing rows
+        universities.forEach(uni => addUniversityRowToTable(uni, tbody, numYears, startYearVal));
+        saveData(); // Save changes
+        calculateAndDisplayRevenue(); // Recalculate revenue after removal
+    }
+
+
+    function calculateAndDisplayRevenue() {
+        const peoplePerProgram = parseFloat(document.getElementById('peoplePerProgram').value) || 0;
+        const pricePerPerson = parseFloat(document.getElementById('pricePerPerson').value) || 0;
+        const numYears = parseInt(document.getElementById('numYears').value) || 3;
+        const startYearVal = parseInt(document.getElementById('startYear').value) || new Date().getFullYear();
+
+        const resultsContainer = document.getElementById('revenueResultsContainer');
+        resultsContainer.innerHTML = ''; 
+
+        const table = document.createElement('table');
+        table.classList.add('results-table');
+        // ... (Table header generation as before) ...
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+        let th = document.createElement('th');
+        th.textContent = 'Universitet / År';
+        headerRow.appendChild(th);
+
+        const annualTotals = Array(numYears).fill(0);
+        const yearsForHeader = [];
+        const exportedProgramFees = {}; // { YEAR: totalAnnualRevenue, ... }
+
+        for (let i = 0; i < numYears; i++) {
+            const currentYear = startYearVal + i;
+            yearsForHeader.push(currentYear.toString());
+            th = document.createElement('th');
+            th.textContent = `${currentYear}`;
+            headerRow.appendChild(th);
+            exportedProgramFees[currentYear] = 0; // Initialize for export
+        }
+
+        const tbody = table.createTBody();
+        universities.forEach(uni => {
+            const row = tbody.insertRow();
+            let cell = row.insertCell();
+            cell.textContent = uni.name;
+            cell.classList.add('row-header');
+            for (let i = 0; i < numYears; i++) {
+                const currentYear = startYearVal + i;
+                const projectsInput = document.getElementById(`projects_${uni.id}_${currentYear}`);
+                const numProjects = projectsInput ? (parseFloat(projectsInput.value) || 0) : 0;
+                const revenue = numProjects * peoplePerProgram * pricePerPerson;
+                cell = row.insertCell();
+                cell.textContent = formatSEK_strat(revenue);
+                annualTotals[i] += revenue;
+                exportedProgramFees[currentYear] += revenue; // Add to export data
+            }
+        });
+        // ... (Total Row generation as before) ...
+        const totalRow = tbody.insertRow();
+        let totalCell = totalRow.insertCell();
+        totalCell.textContent = 'Total Årlig Intäkt';
+        totalCell.classList.add('row-header');
+        totalRow.classList.add('total-row');
+        annualTotals.forEach(total => {
+            totalCell = totalRow.insertCell();
+            totalCell.textContent = formatSEK_strat(total);
+        });
+
+        resultsContainer.appendChild(table);
+        renderRevenueChart(yearsForHeader, annualTotals);
+        
+        // Save calculated program fees for other pages
+        localStorage.setItem(PROGRAM_FEES_EXPORT_KEY, JSON.stringify(exportedProgramFees));
+        console.log("Exported Program Fees:", exportedProgramFees);
+
+        saveData(); // Save all inputs including potentially changed project numbers
+    }
+
+    function renderRevenueChart(years, annualTotals) {
+        // ... (Chart rendering as before, ensure canvas ID exists) ...
+        const canvasEl = document.getElementById('revenueTrendChart');
+        if (!canvasEl) return;
+        const ctx = canvasEl.getContext('2d');
+        if (revenueTrendChartInstance) {
+            revenueTrendChartInstance.destroy();
+        }
+        revenueTrendChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Total Projected Revenue (SEK)', data: annualTotals,
+                    backgroundColor: 'rgba(101, 201, 194, 0.6)', 
+                    borderColor: 'rgba(101, 201, 194, 1)', borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: value => formatSEK_strat(value) } } }, plugins: { legend: { display: true, position: 'top' } } }
+        });
+    }
+
+    function saveData() {
+        const numYearsVal = parseInt(document.getElementById('numYears').value) || 3;
+        const startYearVal = parseInt(document.getElementById('startYear').value) || new Date().getFullYear();
+
+        const data = {
+            numYears: numYearsVal,
+            startYear: startYearVal,
+            peoplePerProgram: parseFloat(document.getElementById('peoplePerProgram').value) || 0,
+            pricePerPerson: parseFloat(document.getElementById('pricePerPerson').value) || 0,
+            universities: JSON.parse(JSON.stringify(universities)), // Deep copy
+            projects: {}
+        };
+        universities.forEach(uni => {
+            for (let i = 0; i < numYearsVal; i++) {
+                const year = startYearVal + i;
+                const inputId = `projects_${uni.id}_${year}`;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement) {
+                    data.projects[inputId] = inputElement.value;
+                }
+            }
+        });
+        localStorage.setItem(STRATEGY_DATA_KEY, JSON.stringify(data));
+        console.log("Strategy data saved.");
+    }
+
+    function loadData() {
+        const savedData = localStorage.getItem(STRATEGY_DATA_KEY);
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            document.getElementById('numYears').value = data.numYears || 3;
+            document.getElementById('startYear').value = data.startYear || new Date().getFullYear();
+            document.getElementById('peoplePerProgram').value = data.peoplePerProgram || 20;
+            document.getElementById('pricePerPerson').value = data.pricePerPerson || 500;
+            
+            if (data.universities && data.universities.length > 0) {
+                universities = JSON.parse(JSON.stringify(data.universities)); // Load saved universities
+            }
+            // Regenerate table based on loaded numYears, startYear and universities list
+            generateProjectsTableStructure(); 
+
+            if (data.projects) {
+                for (const inputId in data.projects) {
+                    const inputElement = document.getElementById(inputId);
+                    if (inputElement) {
+                        inputElement.value = data.projects[inputId];
+                    }
+                }
+            }
+             calculateAndDisplayRevenue(); // Auto-calculate on load if data exists
+        } else {
+            // If no saved data, generate table with default universities
+            generateProjectsTableStructure();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData(); // This will call generateProjectsTableStructure within it if needed
+    });
+
+</script>
+</body>
+</html>
