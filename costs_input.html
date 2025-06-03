@@ -149,22 +149,25 @@
         <input type="number" id="op_office" value="4000" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
         <label for="op_supplies">Office Supplies:</label>
         <input type="number" id="op_supplies" value="200" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
-        <label for="op_admin">Other Admin & Miscellaneous:</label>
+        <label for="op_admin">Administrative Services:</label>
         <input type="number" id="op_admin" value="500" class="opcost-input" data-category="officeAdmin" oninput="debouncedUpdateOpCosts()">
+        
         <div class="opcost-subcategory-summary" id="summary_officeAdmin"><p>Category Subtotal: <strong>SEK 0</strong></p></div>
         <label for="notes_officeAdmin">Office & Admin Assumptions/Notes:</label>
-        <textarea id="notes_officeAdmin" class="assumption-input" placeholder="Office lease terms, utility estimates, expected admin support needs..."></textarea>
+        <textarea id="notes_officeAdmin" class="assumption-input" placeholder="Office lease details, equipment plans, administrative service details..."></textarea>
       </div>
 
       <div class="opcost-category" data-category-id="profServices" data-category-name="Professional Services & Insurance">
-        <h3 class="category-title">Professional Services & Insurance</h3>
-        <label for="op_accounting">Accounting & Audit:</label>
-        <input type="number" id="op_accounting" value="1500" class="opcost-input" data-category="profServices" oninput="debouncedUpdateOpCosts()">
-        <label for="op_insurance">General Business Insurance (Liability, etc.):</label>
-        <input type="number" id="op_insurance" value="800" class="opcost-input" data-category="profServices" oninput="debouncedUpdateOpCosts()">
+        <h3 class="category-title">Program design & delivery</h3>
+        <label for="op_material">Material:</label>
+        <input type="number" id="op_material" value="1500" class="opcost-input" data-category="profServices" oninput="debouncedUpdateOpCosts()">
+        <label for="op_travel">Travel:</label>
+        <input type="number" id="op_travel" value="800" class="opcost-input" data-category="profServices" oninput="debouncedUpdateOpCosts()">
+        <label for="op_licensefee">License fees - self leader:</label>
+        <input type="number" id="op_licensefee" value="800" class="opcost-input" data-category="profServices" oninput="debouncedUpdateOpCosts()">
         <div class="opcost-subcategory-summary" id="summary_profServices"><p>Category Subtotal: <strong>SEK 0</strong></p></div>
-        <label for="notes_profServices">Professional Services Assumptions/Notes:</label>
-        <textarea id="notes_profServices" class="assumption-input" placeholder="Accountant fees, legal consultancy, insurance policy details..."></textarea>
+        <label for="notes_profServices">Program costs assumptions:</label>
+        <textarea id="notes_profServices" class="assumption-input" placeholder="Material costs, travel budget, license fee details..."></textarea>
       </div>
       
       <div class="opcost-chart-container">
@@ -187,7 +190,7 @@
         netSalary: 25000, numEmployees: 1, avgIncomeTaxRate: 30, includePension: true, privateInsurancePerc: 1,
         op_email: 100, op_canva: 120, op_domain: 150, op_webDev: 500, op_chatgpt: 300,
         op_bank: 100, op_phone: 300, op_computer: 800, op_office: 4000, op_supplies: 200, op_admin: 500,
-        op_accounting: 1500, op_insurance: 800,
+        op_material: 1500, op_travel: 800, op_licensefee: 800, // Fixed IDs
         notes_staff: '', notes_techWeb: '', notes_officeAdmin: '', notes_profServices: ''
     };
     const PENSION_RATE = 0.045;
