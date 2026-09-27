@@ -1,10 +1,20 @@
-IyBJbm5lckxvb20KCipqRmluYW5jaWFsIFBsYW5uaW5nICYgQ29zdCBBbmFs
-eXNpcyBUb29sKioKClN0YWZmIGNvc3QgYnJlYWtkb3ducywgUCZMIHN1bW1h
-cmllcywgY2FzaCBmbG93IHRyYWNraW5nLCBhbmQgS1BJIGRhc2hib2FyZHMu
-CiMjIEZlYXR1cmVzCi0gU3RhZmYgY29zdCBjYWxjdWxhdG9yIHdpdGggdGF4
-IGFuZCBidXJkZW4gcmF0ZXMKLSBDYXRlZ29yeS1iYXNlZCBjb3N0IGlucHV0
-Ci0gRmluYW5jaWFsIGRhc2hib2FyZCB3aXRoIFAmTCwgY2FzaCBmbG93LCBh
-bmQgS1BJcwotIFNFSyBjdXJyZW5jeSBmb3JtYXR0aW5nCgojIyBTdGF0dXMK
-Q29tcGxldGUuIEJ1aWx0IGZvciBmaW5hbmNpYWwgYW5hbHlzaXMgYW5kIGNvc3Q
-dHJhY2tpbmcuCgoqIkJ1aWx0IGJ5IEpvw6NvIENhbGRhcyB8IGpvYW9jY2Fs
-ZGFzQGdtYWlsLmNvbSIqKgo=
+# InnerLoom
+
+*jFinancial Planning & Cost Analysis Tool**
+
+Staff cost breakdowns, P&L summaries, cash flow tracking, and KPI dashboards.
+## Features
+- Staff cost calculator with tax and burden rates
+- Category-based cost input
+- Financial dashboard with P&L, cash flow, and KPIs
+- SEK currency formatting
+
+## Status
+Complete. Built for financial analysis and costXÚÚ[ËZ[HðèÛÈØ[\ÈØ[ØØØ[\ÐÛXZ[ÛÛH
+
+## Project context
+
+This is a personal, self-directed learning project by João Caldas. I learn by building real projects, comparing approaches, debugging failures, and documenting what I discover.
+
+AI tools are used extensively during research, design, coding, debugging, testing, and documentation as part of that learning process. AI-generated suggestions are treated as inputs to review, not proof of correctness. Important behavior, claims, security boundaries, and data handling should be tested and documented.
+
